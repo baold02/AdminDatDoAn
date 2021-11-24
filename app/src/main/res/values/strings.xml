@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">QuanLyBanHang</string>
+
+    <string name="donHang_nav">Đơn hàng</string>
+    <string name="sanPham_nav">Sản phẩm</string>
+    <string name="quanLyUser_nav">Quản lý user</string>
+    <string name="thongKe_nav">Thống kê</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
+</resources>

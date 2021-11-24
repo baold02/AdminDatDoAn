@@ -1,0 +1,63 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:padding="10dp"
+    android:orientation="vertical"
+    android:id="@+id/item"
+    android:layout_height="wrap_content">
+
+
+    <TextView
+        android:id="@+id/tvHoTen"
+        android:text="Họ tên: Nguyễn Doãn Hùng"
+        android:gravity="center|left"
+        android:textColor="@color/black"
+        android:layout_width="match_parent"
+        android:layout_height="40dp"/>
+    <TextView
+        android:id="@+id/tvSDT"
+        android:text="SĐT : +84868538942"
+        android:layout_width="match_parent"
+        android:gravity="center|left"
+        android:textColor="@color/black"
+        android:layout_height="40dp"/>
+    <TextView
+        android:id="@+id/tvDiaChi"
+        android:text="Địa chỉ : 123 Nguyễn Trãi, ThanhXuan, Hà Nội"
+        android:layout_width="match_parent"
+        android:gravity="center|left"
+        android:textColor="@color/black"
+        android:layout_height="40dp"/>
+    <TextView
+        android:id="@+id/tvSanPhams"
+        android:text="Sản phẩm : \n \tBánh mì OT(3)
+                        \n \tKem mực(2)"
+        android:layout_width="match_parent"
+        android:textColor="@color/black"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        android:lineHeight="25dp"
+        android:layout_height="wrap_content"/>
+    <TextView
+        android:id="@+id/tvTongTien"
+        android:text="Tổng tiền : 20000đ"
+        android:layout_width="match_parent"
+        android:gravity="center|left"
+        android:textColor="@color/black"
+        android:layout_height="40dp"/>
+    <TextView
+        android:id="@+id/tvTrangThai"
+        android:text="Trạng Thái : Chưa xác nhận"
+        android:layout_width="match_parent"
+        android:gravity="center|left"
+        android:textColor="#D32F2F"
+        android:layout_height="40dp"/>
+
+
+
+
+
+
+</LinearLayout>

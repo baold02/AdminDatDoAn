@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+    <item android:title="QUẢN LÝ">
+        <menu android:checkableBehavior="single">
+            <item
+                android:id="@+id/nav_donHang"
+                android:icon="@drawable/ic_list"
+                android:title="Đơn Hàng" />
+            <item
+                android:id="@+id/nav_sanPham"
+                android:icon="@drawable/ic_donhang"
+                android:title="Sản Phẩm" />
+
+            <item
+                android:id="@+id/nav_loaiSP"
+                android:icon="@drawable/ic_donhang"
+                android:title="Loại Sản Phẩm" />
+            <item
+                android:id="@+id/nav_quanLyUser"
+                android:icon="@drawable/ic_user"
+                android:title="Người Dùng" />
+            <item
+                android:id="@+id/nav_quanLyShipper"
+                android:icon="@drawable/ic_user"
+                android:title="Shipper" />
+
+        </menu>
+
+    </item>
+
+    <item android:title="THỐNG KÊ">
+        <menu android:checkableBehavior="single">
+            <item
+                android:id="@+id/nav_thongKe"
+                android:icon="@drawable/ic_chart"
+                android:title="Thống Kê" />
+        </menu>
+
+    </item>
+
+
+</menu>

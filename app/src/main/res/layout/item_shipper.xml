@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.chauthai.swipereveallayout.SwipeRevealLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:id="@+id/item"
+    app:dragEdge="right"
+    app:mode="same_level">
+
+    <LinearLayout
+        android:orientation="horizontal"
+        android:layout_height="match_parent"
+        android:layout_width="wrap_content">
+        <TextView
+            android:id="@+id/tvEdit"
+            android:text="Edit"
+            android:textColor="@color/white"
+            android:backgroundTint="#FF9800"
+            android:gravity="center"
+            android:background="#FF9800"
+            android:layout_height="match_parent"
+            android:layout_width="80dp"/>
+        <TextView
+            android:id="@+id/tvDelete"
+            android:text="Delete"
+            android:textColor="@color/white"
+            android:backgroundTint="#E61D34"
+            android:gravity="center"
+            android:background="#E61D34"
+            android:layout_height="match_parent"
+            android:layout_width="80dp"/>
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/item_shipper"
+        android:orientation="vertical"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/tvTenShipper"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="16dp"
+            android:text="Họ tên : ngueyen  xx"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <TextView
+            android:id="@+id/tvSDTShipper"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginLeft="16dp"
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="16dp"
+            android:text="SĐT : 09999999999"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@+id/tvTenShipper" />
+    </LinearLayout>
+</com.chauthai.swipereveallayout.SwipeRevealLayout>
