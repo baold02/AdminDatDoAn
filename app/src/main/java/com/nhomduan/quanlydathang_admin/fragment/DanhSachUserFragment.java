@@ -15,16 +15,14 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.ValueEventListener;
 import com.nhomduan.quanlydathang_admin.R;
 import com.nhomduan.quanlydathang_admin.Utils.OverUtils;
-import com.nhomduan.quanlydathang_admin.Utils.UserUtils;
 import com.nhomduan.quanlydathang_admin.activities.MainActivity;
 import com.nhomduan.quanlydathang_admin.adapter.UserAdapter;
+import com.nhomduan.quanlydathang_admin.dao.UserDao;
+import com.nhomduan.quanlydathang_admin.interface_.IAfterGetAllObject;
+import com.nhomduan.quanlydathang_admin.interface_.IAfterUpdateObject;
 import com.nhomduan.quanlydathang_admin.interface_.OnClickItem;
 import com.nhomduan.quanlydathang_admin.interface_.OnLockUser;
 import com.nhomduan.quanlydathang_admin.model.User;
@@ -71,15 +69,15 @@ public class DanhSachUserFragment extends Fragment implements OnClickItem, OnLoc
     }
 
     private void getUserList() {
-        UserUtils.getDbRfUser().addValueEventListener(new ValueEventListener() {
+        UserDao.getInstance().getAllUserListener(new IAfterGetAllObject() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                userList = UserUtils.getAllUser(snapshot);
+            public void iAfterGetAllObject(Object obj) {
+                userList = (List<User>) obj;
                 userAdapter.setData(userList);
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+            public void onError(DatabaseError error) {
 
             }
         });
@@ -107,17 +105,16 @@ public class DanhSachUserFragment extends Fragment implements OnClickItem, OnLoc
 
     @Override
     public void onLock(User user) {
-        UserUtils.getDbRfUser().child(user.getId()).updateChildren(user.toMapLock())
-                .addOnCompleteListener(new OnCompleteListener<Void>() {
-                    @Override
-                    public void onComplete(@NonNull Task<Void> task) {
-                        if (task.isSuccessful()) {
-                            OverUtils.makeToast(getContext(), "Thành công");
-                            getUserList();
-                        } else {
-                            OverUtils.makeToast(getContext(),ERROR_MESSAGE);
-                        }
-                    }
-                });
+        UserDao.getInstance().updateUser(user, user.toMap(), new IAfterUpdateObject() {
+            @Override
+            public void onSuccess(Object obj) {
+                OverUtils.makeToast(getContext(), "Thành công");
+            }
+
+            @Override
+            public void onError(DatabaseError error) {
+                OverUtils.makeToast(getContext(), ERROR_MESSAGE);
+            }
+        });
     }
 }

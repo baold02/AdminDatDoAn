@@ -7,6 +7,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 
 import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
@@ -36,13 +37,12 @@ public class ShiperDao {
         return instance;
     }
 
-    public void getAllShipper(IAfterGetAllObject iAfterGetAllObject) {
+    public void getAllShipperListener(IAfterGetAllObject iAfterGetAllObject) {
         FirebaseDatabase.getInstance().getReference().child("shipper")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
                         List<Shipper> result = new ArrayList<>();
-                        result.add(0, new Shipper("", "Chọn shipper ", ""));
                         for (DataSnapshot data : snapshot.getChildren()) {
                             Shipper shipper = data.getValue(Shipper.class);
                             if (shipper != null) {
@@ -57,6 +57,29 @@ public class ShiperDao {
                         iAfterGetAllObject.onError(error);
                     }
                 });
+    }
+
+    public void getAllShipper(IAfterGetAllObject iAfterGetAllObject) {
+        FirebaseDatabase.getInstance().getReference().child("shipper")
+                .get().addOnCompleteListener(task ->
+                {
+                    if(task.isSuccessful()) {
+                        DataSnapshot dataSnapshot = task.getResult();
+                        if(dataSnapshot != null) {
+                            List<Shipper> result = new ArrayList<>();
+                            for (DataSnapshot data : dataSnapshot.getChildren()) {
+                                Shipper shipper = data.getValue(Shipper.class);
+                                if (shipper != null) {
+                                    result.add(shipper);
+                                }
+                            }
+                            iAfterGetAllObject.iAfterGetAllObject(result);
+                        } else {
+                            iAfterGetAllObject.iAfterGetAllObject(null);
+                        }
+                    }
+                }
+        );
     }
 
     public void getShipperById(String id, IAfterGetAllObject iAfterGetAllObject) {

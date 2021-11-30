@@ -1,5 +1,7 @@
 package com.nhomduan.quanlydathang_admin.dao;
 
+import android.util.Log;
+
 import androidx.annotation.NonNull;
 
 import com.google.firebase.database.DataSnapshot;
@@ -9,7 +11,9 @@ import com.google.firebase.database.ValueEventListener;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterGetAllObject;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterInsertObject;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterUpdateObject;
+import com.nhomduan.quanlydathang_admin.model.GioHang;
 import com.nhomduan.quanlydathang_admin.model.User;
+
 
 import java.util.ArrayList;
 import java.util.List;
@@ -28,8 +32,10 @@ public class UserDao {
         return instance;
     }
 
-    public void getAllUser(IAfterGetAllObject iAfterGetAllObject) {
-        FirebaseDatabase.getInstance().getReference().child("user").addValueEventListener(new ValueEventListener() {
+
+    public void getAllUserListener(IAfterGetAllObject iAfterGetAllObject) {
+        FirebaseDatabase.getInstance().getReference()
+                .child("user").addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(@NonNull DataSnapshot snapshot) {
                 List<User> userList = new ArrayList<>();
@@ -49,24 +55,23 @@ public class UserDao {
         });
     }
 
-    public void getUserById(String id, IAfterGetAllObject iAfterGetAllObject) {
-        FirebaseDatabase.getInstance().getReference().child("user").child(id)
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        User user = snapshot.getValue(User.class);
-                        iAfterGetAllObject.iAfterGetAllObject(user);
+    public void getAllUser(IAfterGetAllObject iAfterGetAllObject) {
+        FirebaseDatabase.getInstance().getReference().child("user").get()
+                .addOnSuccessListener(dataSnapshot -> {
+                    List<User> userList = new ArrayList<>();
+                    for (DataSnapshot data : dataSnapshot.getChildren()) {
+                        if (data != null) {
+                            User user = data.getValue(User.class);
+                            userList.add(user);
+                        }
                     }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        iAfterGetAllObject.onError(error);
-                    }
-                });
+                    iAfterGetAllObject.iAfterGetAllObject(userList);
+                })
+                .addOnFailureListener(e -> Log.e("TAG", "onFailure: "));
     }
 
     public void insertUser(User user, IAfterInsertObject iAfterInsertObject) {
-        FirebaseDatabase.getInstance().getReference().child("user").child(user.getId())
+        FirebaseDatabase.getInstance().getReference().child("user").child(user.getUsername())
                 .setValue(user, (error, ref) -> {
                     if (error == null) {
                         iAfterInsertObject.onSuccess(user);
@@ -77,7 +82,7 @@ public class UserDao {
     }
 
     public void updateUser(User user, Map<String, Object> map, IAfterUpdateObject iAfterUpdateObject) {
-        FirebaseDatabase.getInstance().getReference().child("user").child(user.getId())
+        FirebaseDatabase.getInstance().getReference().child("user").child(user.getUsername())
                 .updateChildren(map, (error, ref) -> {
                     if (error == null) {
                         iAfterUpdateObject.onSuccess(user); // trả về user đã được update
@@ -87,22 +92,66 @@ public class UserDao {
                 });
     }
 
-    // app thiết kế không cho xóa user chỉ lock, unlock --> sử dụng updateUser
-    // bỏ qua phần deleteUser
-
-//    public void deleteUser(User user, IAfterDeleteObject iAfterDeleteObject) {
-//        FirebaseDatabase.getInstance().getReference().child("user").child(user.getId())
-//                .removeValue(new DatabaseReference.CompletionListener() {
-//                    @Override
-//                    public void onComplete(@Nullable DatabaseError error, @NonNull DatabaseReference ref) {
-//                        if(error == null) {
-//                            iAfterDeleteObject.onSuccess(user);
-//                        } else {
-//                            iAfterDeleteObject.onError(error);
-//                        }
-//                    }
-//                });
-//    }
+    public void updateUser(User user, Map<String, Object> map) {
+        FirebaseDatabase.getInstance().getReference().child("user").child(user.getUsername())
+                .updateChildren(map);
+    }
 
 
+    public void getUserByUserName(String userName, IAfterGetAllObject iAfterGetAllObject) {
+        FirebaseDatabase.getInstance().getReference().child("user").child(userName)
+                .get().addOnCompleteListener(task -> {
+            if (task.isSuccessful()) {
+                DataSnapshot dataSnapshot = task.getResult();
+                if (dataSnapshot != null) {
+                    User user = dataSnapshot.getValue(User.class);
+                    iAfterGetAllObject.iAfterGetAllObject(user);
+                } else {
+                    iAfterGetAllObject.iAfterGetAllObject(new User());
+                }
+            }
+        });
+    }
+
+
+    public void getGioHangOfUser(User user, IAfterGetAllObject iAfterGetAllObject) {
+        FirebaseDatabase.getInstance().getReference().child("user").child(user.getUsername())
+                .child("gio_hang").get().addOnCompleteListener(task -> {
+                    if(task.isSuccessful()) {
+                        DataSnapshot dataSnapshot = task.getResult();
+                        List<GioHang> gioHangList = new ArrayList<>();
+                        if (dataSnapshot != null) {
+                            for (DataSnapshot data : dataSnapshot.getChildren()) {
+                                GioHang gioHang = data.getValue(GioHang.class);
+                                gioHangList.add(gioHang);
+                            }
+                        }
+                        iAfterGetAllObject.iAfterGetAllObject(gioHangList);
+                    }
+
+        });
+
+    }
+
+
+    public void getSanPhamYeuThichOfUser(User user, IAfterGetAllObject iAfterGetAllObject) {
+        FirebaseDatabase.getInstance().getReference()
+                .child("user").child(user.getUsername()).child("ma_sp_da_thich")
+                .addValueEventListener(new ValueEventListener() {
+                    @Override
+                    public void onDataChange(@NonNull DataSnapshot snapshot) {
+                        List<String> sanPhamYeuThichList = new ArrayList<>();
+                        for (DataSnapshot data : snapshot.getChildren()) {
+                            String maSP = data.getValue(String.class);
+                            sanPhamYeuThichList.add(maSP);
+                        }
+                        iAfterGetAllObject.iAfterGetAllObject(sanPhamYeuThichList);
+                    }
+
+                    @Override
+                    public void onCancelled(@NonNull DatabaseError error) {
+                        iAfterGetAllObject.onError(error);
+                    }
+                });
+    }
 }

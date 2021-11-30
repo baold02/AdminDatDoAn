@@ -164,6 +164,23 @@
                 android:layout_height="wrap_content"
                 android:hint="Khẩu phần của sản phẩm" />
 
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Trạng Thái: "
+                android:textColor="@color/black"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvTrangThai"
+                android:layout_marginTop="8dp"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:text="@string/nhan_de_chon_trang_thai"
+                android:gravity="center_vertical"
+                android:textSize="18sp"
+                android:paddingLeft="5dp" />
+
             <Button
                 android:id="@+id/btn_LuuSanPham"
                 android:layout_width="match_parent"

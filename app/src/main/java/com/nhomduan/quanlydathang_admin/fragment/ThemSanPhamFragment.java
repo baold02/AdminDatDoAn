@@ -3,8 +3,6 @@ package com.nhomduan.quanlydathang_admin.fragment;
 import static android.app.Activity.RESULT_OK;
 import static com.nhomduan.quanlydathang_admin.Utils.OverUtils.ERROR_MESSAGE;
 
-import static okhttp3.internal.Internal.instance;
-
 import android.content.Context;
 import android.content.Intent;
 import android.net.Uri;
@@ -19,7 +17,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.Spinner;
-import android.widget.Toast;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -27,25 +25,23 @@ import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.storage.OnProgressListener;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
-import com.google.firebase.storage.UploadTask;
 import com.nhomduan.quanlydathang_admin.R;
-import com.nhomduan.quanlydathang_admin.Utils.LoaiSanPhamUtils;
 import com.nhomduan.quanlydathang_admin.Utils.OverUtils;
-import com.nhomduan.quanlydathang_admin.Utils.ProductUtils;
 import com.nhomduan.quanlydathang_admin.activities.MainActivity;
+import com.nhomduan.quanlydathang_admin.activities.ShowProductActivity;
 import com.nhomduan.quanlydathang_admin.adapter.LoaiSPSpinnerAdapter;
 import com.nhomduan.quanlydathang_admin.dao.ProductDao;
+import com.nhomduan.quanlydathang_admin.dao.ProductTypeDao;
+import com.nhomduan.quanlydathang_admin.dialog.SingleChoiceDialog;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterGetAllObject;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterInsertObject;
+import com.nhomduan.quanlydathang_admin.interface_.IAfterUpdateObject;
 import com.nhomduan.quanlydathang_admin.model.LoaiSP;
 import com.nhomduan.quanlydathang_admin.model.Product;
 
@@ -70,6 +66,10 @@ public class ThemSanPhamFragment extends Fragment implements View.OnClickListene
     private Button btnLuuSanPham;
     private ProgressBar progressBar;
     private EditText edKhauPhan;
+    private TextView tvTrangThai;
+
+
+
 
 
     private Uri imgUri;
@@ -79,6 +79,9 @@ public class ThemSanPhamFragment extends Fragment implements View.OnClickListene
 
     private Toolbar toolbar;
     private MainActivity activity;
+
+    private List<LoaiSP> loaiSPList;
+    private LoaiSPSpinnerAdapter loaiSPAdapter;
 
 
     @Nullable
@@ -94,19 +97,42 @@ public class ThemSanPhamFragment extends Fragment implements View.OnClickListene
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                fragmentManager.popBackStack();
+                activity.getSupportFragmentManager().popBackStack();
             }
         });
 
         setSpUpLoaiSP();
+        setUpChonTrangThai();
 
         btnLuuSanPham.setOnClickListener(this);
         imgAnhChinhSP.setOnClickListener(this);
     }
 
+    private void setUpChonTrangThai() {
+        tvTrangThai.setOnClickListener(v -> {
+            String[] trangThaiSPList = requireActivity().getResources().getStringArray(R.array.choice_trang_thai_sp);
+            SingleChoiceDialog singleChoiceDialog = new SingleChoiceDialog(trangThaiSPList,
+                    0,
+                    "Chọn trạng thái sản phẩm",
+                    "Chọn",
+                    "Hủy",
+                    new SingleChoiceDialog.ISingleChoiceDialog() {
+                        @Override
+                        public void onChoice(Object[] objList, int position) {
+                            tvTrangThai.setText((String) objList[position]);
+                        }
+
+                        @Override
+                        public void onCancel() {
+                        }
+                    });
+            singleChoiceDialog.show(requireActivity().getSupportFragmentManager(), "Single choice dialog");
+        });
+    }
+
     private void setSpUpLoaiSP() {
-        List<LoaiSP> loaiSPList = new ArrayList<>();
-        LoaiSPSpinnerAdapter loaiSPAdapter = new LoaiSPSpinnerAdapter(getContext(), loaiSPList);
+        loaiSPList = new ArrayList<>();
+        loaiSPAdapter = new LoaiSPSpinnerAdapter(getContext(), loaiSPList);
         spLoaiSP.setAdapter(loaiSPAdapter);
         spLoaiSP.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
@@ -120,52 +146,17 @@ public class ThemSanPhamFragment extends Fragment implements View.OnClickListene
 
             }
         });
-        spLoaiSP.setSelection(0);
 
-        LoaiSanPhamUtils.getDbRfLoaiSP().addChildEventListener(new ChildEventListener() {
+        ProductTypeDao.getInstance().getAllProductType(new IAfterGetAllObject() {
             @Override
-            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                LoaiSP loaiSP = snapshot.getValue(LoaiSP.class);
-                if (loaiSP != null) {
-                    loaiSPList.add(loaiSP);
-                    loaiSPAdapter.notifyDataSetChanged();
-                }
+            public void iAfterGetAllObject(Object obj) {
+                loaiSPList = (List<LoaiSP>) obj;
+                loaiSPAdapter.setData(loaiSPList);
+                spLoaiSP.setSelection(0);
             }
 
             @Override
-            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                LoaiSP loaiSP = snapshot.getValue(LoaiSP.class);
-                if (loaiSP != null) {
-                    for (int i = 0; i < loaiSPList.size(); i++) {
-                        if (loaiSP.getId().equals(loaiSPList.get(i).getId())) {
-                            loaiSPList.set(i, loaiSP);
-                        }
-                    }
-                    loaiSPAdapter.notifyDataSetChanged();
-                }
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                LoaiSP loaiSP = snapshot.getValue(LoaiSP.class);
-                if (loaiSP != null) {
-                    for (int i = 0; i < loaiSPList.size(); i++) {
-                        if (loaiSP.getId().equals(loaiSPList.get(i).getId())) {
-                            loaiSPList.remove(i);
-                            break;
-                        }
-                    }
-                    loaiSPAdapter.notifyDataSetChanged();
-                }
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+            public void onError(DatabaseError error) {
 
             }
         });
@@ -185,6 +176,7 @@ public class ThemSanPhamFragment extends Fragment implements View.OnClickListene
         btnLuuSanPham = view.findViewById(R.id.btn_LuuSanPham);
         progressBar = view.findViewById(R.id.progressBar);
         edKhauPhan = view.findViewById(R.id.ed_KhauPhan);
+        tvTrangThai = view.findViewById(R.id.tvTrangThai);
 
         //
         progressBar.setVisibility(View.INVISIBLE);
@@ -192,6 +184,7 @@ public class ThemSanPhamFragment extends Fragment implements View.OnClickListene
 
         toolbar = view.findViewById(R.id.toolbar);
         fragmentManager = getParentFragmentManager();
+        activity = (MainActivity) getActivity();
 
     }
 
@@ -220,25 +213,15 @@ public class ThemSanPhamFragment extends Fragment implements View.OnClickListene
         }
 
         StorageReference fileRef =
-                ProductUtils.getStRfProduct().child(System.currentTimeMillis() + "." + OverUtils.getExtensionFile(context, imgUri));
-        fileRef.putFile(imgUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                FirebaseStorage.getInstance().getReference().child(System.currentTimeMillis() + "." + OverUtils.getExtensionFile(context, imgUri));
+        fileRef.putFile(imgUri).addOnSuccessListener(taskSnapshot -> fileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
             @Override
-            public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
-                fileRef.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
-                    @Override
-                    public void onSuccess(Uri uri) {
-                        String imageUri = String.valueOf(uri);
-                        product.setImage(imageUri);
-                        postSanPham(product);
-                    }
-                });
+            public void onSuccess(Uri uri) {
+                String imageUri = String.valueOf(uri);
+                product.setImage(imageUri);
+                postSanPham(product);
             }
-        }).addOnProgressListener(new OnProgressListener<UploadTask.TaskSnapshot>() {
-            @Override
-            public void onProgress(@NonNull UploadTask.TaskSnapshot snapshot) {
-                progressBar.setVisibility(View.VISIBLE);
-            }
-        }).addOnFailureListener(new OnFailureListener() {
+        })).addOnProgressListener(snapshot -> progressBar.setVisibility(View.VISIBLE)).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
                 OverUtils.makeToast(getContext(), ERROR_MESSAGE);
@@ -248,7 +231,7 @@ public class ThemSanPhamFragment extends Fragment implements View.OnClickListene
 
 
     private void postSanPham(Product product) {
-        String key = ProductUtils.getDbRfProduct().push().getKey();
+        String key = FirebaseDatabase.getInstance().getReference("san_pham").push().getKey();
         product.setId(key);
         ProductDao.getInstance().getAllProduct(new IAfterGetAllObject() {
             @Override
@@ -264,6 +247,9 @@ public class ThemSanPhamFragment extends Fragment implements View.OnClickListene
                                 progressBar.setVisibility(View.INVISIBLE);
                                 clearForm();
                                 capNhatSoSanPhamCuaLoai(product.getLoai_sp());
+                                Intent intent = new Intent(getContext(), ShowProductActivity.class);
+                                intent.putExtra("productId", product.getId());
+                                startActivity(intent);
                             }
 
                             @Override
@@ -282,40 +268,20 @@ public class ThemSanPhamFragment extends Fragment implements View.OnClickListene
         });
     }
 
-
-
-
-
-
-
-
-
-//    ProductUtils.getDbRfProduct().child(product.getId())
-//            .setValue(product).addOnCompleteListener(new OnCompleteListener<Void>() {
-//        @Override
-//        public void onComplete(@NonNull Task<Void> task) {
-//            if (task.isSuccessful()) {
-//                OverUtils.makeToast(getContext(), "Thêm thành công");
-//                progressBar.setVisibility(View.INVISIBLE);
-//                clearForm();
-//                capNhatSoSanPhamCuaLoai(product.getLoai_sp());
-//            } else {
-//                OverUtils.makeToast(getContext(), ERROR_MESSAGE);
-//            }
-//        }
-//    });
-
-    private void capNhatSoSanPhamCuaLoai(String loai_sp) {
-        LoaiSanPhamUtils.getDbRfLoaiSP().child(loai_sp).get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+    private void capNhatSoSanPhamCuaLoai(String loai_spId) {
+        ProductTypeDao.getInstance().getProductTypeById(loai_spId, new IAfterGetAllObject() {
             @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                if (task.isSuccessful() && task.getResult() != null) {
-                    LoaiSP loaiSP = task.getResult().getValue(LoaiSP.class);
-                    if (loaiSP != null) {
-                        loaiSP.setSoSanPhamThuocLoai(loaiSP.getSoSanPhamThuocLoai() + 1);
-                        LoaiSanPhamUtils.getDbRfLoaiSP().child(loai_sp).setValue(loaiSP);
-                    }
+            public void iAfterGetAllObject(Object obj) {
+                LoaiSP loaiSP = (LoaiSP) obj;
+                if (loaiSP.getId() != null) {
+                    loaiSP.setSoSanPhamThuocLoai(loaiSP.getSoSanPhamThuocLoai() + 1);
+                    ProductTypeDao.getInstance().updateProductType(loaiSP, loaiSP.toMapSoLuongSanPham());
                 }
+            }
+
+            @Override
+            public void onError(DatabaseError error) {
+
             }
         });
     }
@@ -331,6 +297,9 @@ public class ThemSanPhamFragment extends Fragment implements View.OnClickListene
         spLoaiSP.setSelection(0);
         imgAnhChinhSP.setImageResource(R.drawable.ic_add);
         imgUri = null;
+        edKhauPhan.setText("");
+        tvTrangThai.setText(getString(R.string.nhan_de_chon_trang_thai));
+
     }
 
     private boolean checkProduct(Product product, List<Product> productList) {
@@ -354,6 +323,7 @@ public class ThemSanPhamFragment extends Fragment implements View.OnClickListene
         String huongDanBaoQuan = edHuongDanBaoQuan.getText().toString().trim();
         String thoiGianCheBien = edThoiGianCheBien.getText().toString().trim();
         String khauPhan = edKhauPhan.getText().toString().trim();
+        String trangThai = tvTrangThai.getText().toString().trim();
 
         if (name.isEmpty()) {
             OverUtils.makeToast(getContext(), "Cần thêm thông tin sản phẩm");
@@ -391,6 +361,10 @@ public class ThemSanPhamFragment extends Fragment implements View.OnClickListene
             OverUtils.makeToast(getContext(), "Cần nhập thông tin khẩu phần");
             return null;
         }
+        if(trangThai.equals(getString(R.string.nhan_de_chon_trang_thai))) {
+            OverUtils.makeToast(getContext(), "Cần chọn trạng thái trước khi lưu sản phẩm");
+            return null;
+        }
 
         product.setName(name);
         product.setGia_ban(Integer.parseInt(giaBan));
@@ -401,6 +375,7 @@ public class ThemSanPhamFragment extends Fragment implements View.OnClickListene
         product.setThong_tin_bao_quan(huongDanBaoQuan);
         product.setThoiGianCheBien(Integer.parseInt(thoiGianCheBien));
         product.setKhau_phan(khauPhan);
+        product.setTrang_thai(trangThai);
         return product;
     }
 
@@ -433,9 +408,9 @@ public class ThemSanPhamFragment extends Fragment implements View.OnClickListene
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
-                    // handle back button's click listener
-                    fragmentManager.popBackStack();
-                    Toast.makeText(getActivity(), "Back press", Toast.LENGTH_SHORT).show();
+                    activity.getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.contentFrame, new DanhSachSanPhamFragment())
+                            .commit();
                     return true;
                 }
                 return false;

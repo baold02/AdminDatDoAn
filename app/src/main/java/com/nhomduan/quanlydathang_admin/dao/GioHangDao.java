@@ -31,7 +31,7 @@ public class GioHangDao {
 
     public void getAllGioHang(User user, IAfterGetAllObject iAfterGetAllObject) {
         FirebaseDatabase.getInstance().getReference().child("user")
-                .child(user.getId()).child("gio_hang")
+                .child(user.getUsername()).child("gio_hang")
                 .addValueEventListener(new ValueEventListener() {
                     @Override
                     public void onDataChange(@NonNull DataSnapshot snapshot) {
@@ -62,7 +62,7 @@ public class GioHangDao {
      */
     public void insertGioHang(User user, List<GioHang> gioHangList, IAfterInsertObject iAfterInsertObject) {
         FirebaseDatabase.getInstance().getReference().child("user")
-                .child(user.getId()).child("gio_hang")
+                .child(user.getUsername()).child("gio_hang")
                 .setValue(gioHangList, new DatabaseReference.CompletionListener() {
                     @Override
                     public void onComplete(@Nullable DatabaseError error, @NonNull DatabaseReference ref) {

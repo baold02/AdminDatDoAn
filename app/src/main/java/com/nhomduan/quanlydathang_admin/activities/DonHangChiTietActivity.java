@@ -1,7 +1,7 @@
 package com.nhomduan.quanlydathang_admin.activities;
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
+import static com.nhomduan.quanlydathang_admin.Utils.OverUtils.ERROR_MESSAGE;
+
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.DividerItemDecoration;
@@ -16,20 +16,19 @@ import android.widget.Button;
 import android.widget.Spinner;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.ValueEventListener;
 import com.nhomduan.quanlydathang_admin.R;
-import com.nhomduan.quanlydathang_admin.Utils.DonHangUtils;
 import com.nhomduan.quanlydathang_admin.Utils.OverUtils;
-import com.nhomduan.quanlydathang_admin.Utils.ShipperUtils;
 import com.nhomduan.quanlydathang_admin.adapter.DonHangChiTietAdapter;
 import com.nhomduan.quanlydathang_admin.adapter.ShipperSpinnerAdapter;
+import com.nhomduan.quanlydathang_admin.dao.OrderDao;
+import com.nhomduan.quanlydathang_admin.dao.ProductDao;
+import com.nhomduan.quanlydathang_admin.dao.ShiperDao;
+import com.nhomduan.quanlydathang_admin.interface_.IAfterGetAllObject;
+import com.nhomduan.quanlydathang_admin.interface_.IAfterUpdateObject;
 import com.nhomduan.quanlydathang_admin.model.DonHang;
 import com.nhomduan.quanlydathang_admin.model.DonHangChiTiet;
+import com.nhomduan.quanlydathang_admin.model.Product;
 import com.nhomduan.quanlydathang_admin.model.Shipper;
 import com.nhomduan.quanlydathang_admin.model.TrangThai;
 
@@ -49,6 +48,14 @@ public class DonHangChiTietActivity extends AppCompatActivity {
     private TextView tvTongTien;
     private Button btnXacNhan;
     private TextView tvTGDatHang;
+    private TextView tvTGGiaoHang;
+    private TextView tvTitleTGGiaoHang;
+
+
+
+
+
+
 
     private List<DonHangChiTiet> donHangChiTietList;
     private DonHangChiTietAdapter donHangChiTietAdapter;
@@ -85,32 +92,44 @@ public class DonHangChiTietActivity extends AppCompatActivity {
                     }
                 }
                 if(trangThai.equals(TrangThai.HT)) {
-                    donHang.setThoiGianGiaoHang(OverUtils.simpleDateFormat.format(new Date(System.currentTimeMillis())));
+                    donHang.setThoiGianGiaoHang(String.valueOf(System.currentTimeMillis()));
+                    List<DonHangChiTiet> donHangChiTietList = donHang.getDon_hang_chi_tiets();
+                    for(DonHangChiTiet dhct : donHangChiTietList) {
+                        ProductDao.getInstance().getProductById(dhct.getProduct().getId(), new IAfterGetAllObject() {
+                            @Override
+                            public void iAfterGetAllObject(Object obj) {
+                                Product product = (Product) obj;
+                                product.setSo_luong_da_ban(product.getSo_luong_da_ban() + dhct.getSo_luong());
+                                ProductDao.getInstance().updateProduct(product, product.toMapSPDB());
+                            }
+
+                            @Override
+                            public void onError(DatabaseError error) {
+                                OverUtils.makeToast(DonHangChiTietActivity.this, ERROR_MESSAGE);
+                            }
+                        });
+                    }
+
                 }
                 donHang.setTrang_thai(trangThai.getTrangThai());
                 donHang.setShipper(shipper);
-                DonHangUtils.getDbRfDonHang().child(donHang.getId()).setValue(donHang, new DatabaseReference.CompletionListener() {
+                OrderDao.getInstance().updateDonHang(donHang, donHang.toMapShipperAndTrangThai(), new IAfterUpdateObject() {
                     @Override
-                    public void onComplete(@Nullable DatabaseError error, @NonNull DatabaseReference ref) {
-                        if (error == null) {
-                            OverUtils.makeToast(DonHangChiTietActivity.this, "Xác nhận thành công");
-                            DonHangUtils.getDbRfDonHang().child(donHang.getId())
-                                    .get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-                                @Override
-                                public void onComplete(@NonNull Task<DataSnapshot> task) {
-                                    if (task.isSuccessful() && task.getResult() != null) {
-                                        DonHang donHang = task.getResult().getValue(DonHang.class);
-                                        DonHangChiTietActivity.donHang = donHang;
-                                        if (donHang.getTrang_thai().equals(TrangThai.HT.getTrangThai())) {
-                                            btnXacNhan.setEnabled(false);
-                                            spnShipper.setEnabled(false);
-                                            spnTrangThai.setEnabled(false);
-                                        }
-                                        setUpTrangThai();
-                                    }
-                                }
-                            });
+                    public void onSuccess(Object obj) {
+                        OverUtils.makeToast(DonHangChiTietActivity.this, "Xác nhận thành công");
+                        DonHangChiTietActivity.donHang = (DonHang) obj;
+                        if (donHang.getTrang_thai().equals(TrangThai.HT.getTrangThai())) {
+                            btnXacNhan.setEnabled(false);
+                            spnShipper.setEnabled(false);
+                            spnTrangThai.setEnabled(false);
                         }
+                        setUpTrangThai();
+
+                    }
+
+                    @Override
+                    public void onError(DatabaseError error) {
+
                     }
                 });
 
@@ -120,6 +139,8 @@ public class DonHangChiTietActivity extends AppCompatActivity {
 
     }
 
+
+
     private void setUpComponents() {
         setUpDonHangChiTietList();
         tvHoTen.setText(donHang.getHo_ten());
@@ -127,12 +148,20 @@ public class DonHangChiTietActivity extends AppCompatActivity {
         tvSDT.setText(donHang.getSdt());
         tvTongTien.setText(OverUtils.currencyFormat.format(donHang.getTong_tien()));
         tvTGDatHang.setText(donHang.getThoiGianDatHang());
+        if(donHang.getTrang_thai().equals(TrangThai.HT.getTrangThai())) {
+            tvTGGiaoHang.setVisibility(View.VISIBLE);
+            tvTitleTGGiaoHang.setVisibility(View.VISIBLE);
+            long time = Long.parseLong(donHang.getThoiGianGiaoHang());
+            tvTGGiaoHang.setText(OverUtils.simpleDateFormat.format(new Date(time)));
+        }
+
         setUpTrangThai();
 
-        ShipperUtils.getDbRfShipper().addValueEventListener(new ValueEventListener() {
+        ShiperDao.getInstance().getAllShipperListener(new IAfterGetAllObject() {
             @Override
-            public void onDataChange(@NonNull DataSnapshot snapshot) {
-                shipperList = ShipperUtils.getAllShipper(snapshot);
+            public void iAfterGetAllObject(Object obj) {
+                shipperList = (List<Shipper>) obj;
+                shipperList.add(0,  new Shipper("", "Chọn shipper ", ""));
                 shipperSpinnerAdapter = new ShipperSpinnerAdapter(DonHangChiTietActivity.this, shipperList);
                 spnShipper.setAdapter(shipperSpinnerAdapter);
 
@@ -149,7 +178,7 @@ public class DonHangChiTietActivity extends AppCompatActivity {
             }
 
             @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+            public void onError(DatabaseError error) {
 
             }
         });
@@ -211,5 +240,7 @@ public class DonHangChiTietActivity extends AppCompatActivity {
         tvTongTien = findViewById(R.id.tvTongTien);
         btnXacNhan = findViewById(R.id.btnXacNhan);
         tvTGDatHang = findViewById(R.id.tvTGDatHang);
+        tvTGGiaoHang = findViewById(R.id.tvTGGiaoHang);
+        tvTitleTGGiaoHang = findViewById(R.id.tvTitleTGGiaoHang);
     }
 }

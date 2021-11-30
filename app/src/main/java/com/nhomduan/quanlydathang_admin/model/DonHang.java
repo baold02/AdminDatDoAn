@@ -1,7 +1,9 @@
 package com.nhomduan.quanlydathang_admin.model;
 
 import java.io.Serializable;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 public class DonHang implements Serializable {
     private String id;
@@ -16,6 +18,7 @@ public class DonHang implements Serializable {
     private String thoiGianDatHang;
     private String thoiGianGiaoHang;
     private String sdt;
+    private String thong_tin_huy_don;
 
 
     public DonHang() {
@@ -116,5 +119,35 @@ public class DonHang implements Serializable {
 
     public void setTrang_thai(String trang_thai) {
         this.trang_thai = trang_thai;
+    }
+
+    public String getThong_tin_huy_don() {
+        return thong_tin_huy_don;
+    }
+
+    public void setThong_tin_huy_don(String thong_tin_huy_don) {
+        this.thong_tin_huy_don = thong_tin_huy_don;
+    }
+
+    public Map<String, Object> toMapShipperAndTrangThai() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("thoiGianGiaoHang", thoiGianGiaoHang);
+        map.put("shipper", shipper);
+        map.put("trang_thai", trang_thai);
+        return map;
+    }
+
+    public Map<String, Object> toMapHuySPTrongDon() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("don_hang_chi_tiets", don_hang_chi_tiets);
+        map.put("thong_tin_huy_don", thong_tin_huy_don);
+        return map;
+    }
+
+    public Map<String, Object> toMapHuyDon() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("thong_tin_huy_don", thong_tin_huy_don);
+        map.put("trang_thai", trang_thai);
+        return map;
     }
 }

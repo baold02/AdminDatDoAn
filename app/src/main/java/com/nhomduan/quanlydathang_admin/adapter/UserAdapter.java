@@ -53,7 +53,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         if(user == null) {
             return;
         }
-        viewBinderHelper.bind(holder.item, user.getId());
+        viewBinderHelper.bind(holder.item, user.getUsername());
 
         if(user.isEnable()) {
             holder.tvLock.setText("Lock");

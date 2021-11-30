@@ -20,11 +20,12 @@
     <com.google.android.material.tabs.TabLayout
         app:tabTextAppearance="@style/TextAppearance.AppCompat.Small"
         android:id="@+id/tabLayout"
+        app:tabMode="scrollable"
         app:tabTextColor="@color/black"
         app:tabSelectedTextColor="#2E7D32"
         app:tabIndicatorColor="#2E7D32"
         android:layout_width="match_parent"
-        android:layout_height="?actionBarSize"/>
+        android:layout_height="40dp"/>
     <androidx.viewpager2.widget.ViewPager2
         android:id="@+id/viewpager"
         android:layout_width="match_parent"

@@ -1,5 +1,6 @@
 package com.nhomduan.quanlydathang_admin.adapter;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,6 +27,12 @@ public class DonHangAdapter extends RecyclerView.Adapter<DonHangAdapter.DonHangV
     public DonHangAdapter(List<DonHang> donHangList, OnClickItem onClickItem) {
         this.donHangList = donHangList;
         this.onClickItem = onClickItem;
+    }
+
+    @SuppressLint("NotifyDataSetChanged")
+    public void setData(List<DonHang> donHangList) {
+        this.donHangList = donHangList;
+        notifyDataSetChanged();
     }
 
     @NonNull
@@ -68,6 +75,8 @@ public class DonHangAdapter extends RecyclerView.Adapter<DonHangAdapter.DonHangV
         }
         return 0;
     }
+
+
 
     public class DonHangViewHolder extends RecyclerView.ViewHolder {
         private TextView tvHoTen;

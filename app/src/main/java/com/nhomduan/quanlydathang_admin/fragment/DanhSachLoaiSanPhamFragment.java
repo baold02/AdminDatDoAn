@@ -2,9 +2,9 @@ package com.nhomduan.quanlydathang_admin.fragment;
 
 import static android.app.Activity.RESULT_OK;
 
-import android.app.AlertDialog;
+import static com.nhomduan.quanlydathang_admin.Utils.OverUtils.ERROR_MESSAGE;
+
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
@@ -31,19 +31,20 @@ import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.nhomduan.quanlydathang_admin.R;
-import com.nhomduan.quanlydathang_admin.Utils.LoaiSanPhamUtils;
 import com.nhomduan.quanlydathang_admin.Utils.OverUtils;
 import com.nhomduan.quanlydathang_admin.activities.MainActivity;
 import com.nhomduan.quanlydathang_admin.adapter.LoaiSPAdapter;
 import com.nhomduan.quanlydathang_admin.dao.ProductTypeDao;
+import com.nhomduan.quanlydathang_admin.interface_.IAfterDeleteObject;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterGetAllObject;
+import com.nhomduan.quanlydathang_admin.interface_.IAfterInsertObject;
+import com.nhomduan.quanlydathang_admin.interface_.IAfterUpdateObject;
 import com.nhomduan.quanlydathang_admin.interface_.OnClickItem;
 import com.nhomduan.quanlydathang_admin.model.LoaiSP;
 import com.squareup.picasso.Picasso;
@@ -118,7 +119,7 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
         rcvLoaiSP.setLayoutManager(new LinearLayoutManager(getContext()));
         rcvLoaiSP.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
         rcvLoaiSP.setAdapter(loaiSPAdapter);
-        ProductTypeDao.getInstance().getAllProductType(new IAfterGetAllObject() {
+        ProductTypeDao.getInstance().getAllProductTypeListener(new IAfterGetAllObject() {
             @Override
             public void iAfterGetAllObject(Object obj) {
                 loaiSPList = (List<LoaiSP>) obj;
@@ -181,28 +182,24 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
         if (validateInputThemLoaiSP()) {
             LoaiSP loaiSP = new LoaiSP();
             loaiSP.setName(dgAddEdtTenLoaiSP.getText().toString().trim());
-            LoaiSanPhamUtils.getDbRfLoaiSP().get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            ProductTypeDao.getInstance().getAllProductType(new IAfterGetAllObject() {
                 @Override
-                public void onComplete(@NonNull Task<DataSnapshot> task) {
-                    if (task.isSuccessful()) {
-                        DataSnapshot dataSnapshot = task.getResult();
-                        if (dataSnapshot != null) {
-                            List<LoaiSP> loaiSPList = LoaiSanPhamUtils.getAllLoaiSP(dataSnapshot);
-                            if (validSPWhenAdd(loaiSP, loaiSPList)) {
-                                saveAndGetImgLinkWhenAdd(loaiSP, imgUriWhenAdd);
-                            }
-                        } else {
-                            OverUtils.makeToast(getContext(), OverUtils.ERROR_MESSAGE);
-                            dgAddLoading.setVisibility(View.INVISIBLE);
+                public void iAfterGetAllObject(Object obj) {
+                    List<LoaiSP> loaiSPList = (List<LoaiSP>) obj;
+                    if(loaiSPList != null) {
+                        if (validSPWhenAdd(loaiSP, loaiSPList)) {
+                            saveAndGetImgLinkWhenAdd(loaiSP, imgUriWhenAdd);
                         }
                     } else {
-                        OverUtils.makeToast(getContext(), OverUtils.ERROR_MESSAGE);
+                        OverUtils.makeToast(getContext(), ERROR_MESSAGE);
                         dgAddLoading.setVisibility(View.INVISIBLE);
                     }
                 }
+                @Override
+                public void onError(DatabaseError error) {
+
+                }
             });
-
-
         }
     }
 
@@ -252,7 +249,7 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                OverUtils.makeToast(getContext(), OverUtils.ERROR_MESSAGE);
+                OverUtils.makeToast(getContext(), ERROR_MESSAGE);
                 dgAddLoading.setVisibility(View.INVISIBLE);
             }
         });
@@ -263,27 +260,32 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
     private void insertLoaiSP(LoaiSP loaiSP, String imgUri) {
         loaiSP.setHinhanh(imgUri);
         loaiSP.setSoSanPhamThuocLoai(0);
-        String idSP = LoaiSanPhamUtils.getDbRfLoaiSP().push().getKey();
+        String idSP = FirebaseDatabase.getInstance().getReference("loai_sp").push().getKey();
         loaiSP.setId(idSP);
         if (idSP != null) {
-            LoaiSanPhamUtils.getDbRfLoaiSP().child(loaiSP.getId()).setValue(loaiSP).addOnCompleteListener(new OnCompleteListener<Void>() {
-                @Override
-                public void onComplete(@NonNull Task<Void> task) {
-                    if (task.isSuccessful()) {
-                        OverUtils.makeToast(getContext(), "Lưu loại sản phẩm thành công");
-                        dgAddLoading.setVisibility(View.INVISIBLE);
-                        addDialog.dismiss();
-                    } else {
-                        OverUtils.makeToast(getContext(), OverUtils.ERROR_MESSAGE);
-                        dgAddLoading.setVisibility(View.INVISIBLE);
-                    }
-                }
-            });
+           ProductTypeDao.getInstance().insertProductType(loaiSP, new IAfterInsertObject() {
+               @Override
+               public void onSuccess(Object obj) {
+                   OverUtils.makeToast(getContext(), "Lưu loại sản phẩm thành công");
+                   dgAddLoading.setVisibility(View.INVISIBLE);
+                   addDialog.dismiss();
+               }
+
+               @Override
+               public void onError(DatabaseError exception) {
+                   OverUtils.makeToast(getContext(), ERROR_MESSAGE);
+                   dgAddLoading.setVisibility(View.INVISIBLE);
+               }
+           });
         } else {
-            OverUtils.makeToast(getContext(), OverUtils.ERROR_MESSAGE);
+            OverUtils.makeToast(getContext(), ERROR_MESSAGE);
             dgAddLoading.setVisibility(View.INVISIBLE);
         }
     }
+
+
+
+
 
 
     @Override
@@ -302,26 +304,17 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
     public void onDeleteItem(Object obj) {
         LoaiSP loaiSP = (LoaiSP) obj;
         if (loaiSP != null) {
-            new AlertDialog.Builder(getContext())
-                    .setTitle("Xóa loại sản phẩm")
-                    .setMessage("Bạn có chắc chắn muốn xóa hay không?")
-                    .setNegativeButton("Hủy", null)
-                    .setPositiveButton("Xóa", new DialogInterface.OnClickListener() {
-                        @Override
-                        public void onClick(DialogInterface dialogInterface, int i) {
-                            LoaiSanPhamUtils.getDbRfLoaiSP().child(loaiSP.getId()).removeValue(new DatabaseReference.CompletionListener() {
-                                @Override
-                                public void onComplete(@Nullable DatabaseError error, @NonNull DatabaseReference ref) {
-                                    if (error == null) {
-                                        OverUtils.makeToast(getContext(), "Xóa thành công");
-                                    } else {
-                                        OverUtils.makeToast(getContext(), OverUtils.ERROR_MESSAGE);
-                                    }
-                                }
-                            });
-                        }
-                    })
-                    .show();
+           ProductTypeDao.getInstance().deleteProductType(getContext(), loaiSP, new IAfterDeleteObject() {
+               @Override
+               public void onSuccess(Object obj) {
+                   OverUtils.makeToast(getContext(), "Xóa thành công");
+               }
+
+               @Override
+               public void onError(DatabaseError error) {
+                    OverUtils.makeToast(getContext(), ERROR_MESSAGE);
+               }
+           });
         }
 
     }
@@ -380,32 +373,32 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
         dgEditLoading.setVisibility(View.VISIBLE);
         if (validateInputSuaLoaiSP()) {
             loaiSP.setName(dgEditEdtTenLoaiSP.getText().toString().trim());
-            LoaiSanPhamUtils.getDbRfLoaiSP().get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            ProductTypeDao.getInstance().getAllProductType(new IAfterGetAllObject() {
                 @Override
-                public void onComplete(@NonNull Task<DataSnapshot> task) {
-                    if (task.isSuccessful()) {
-                        DataSnapshot dataSnapshot = task.getResult();
-                        if (dataSnapshot != null) {
-                            List<LoaiSP> loaiSPList = LoaiSanPhamUtils.getAllLoaiSP(dataSnapshot);
-                            if (validSPWhenEdit(loaiSP, loaiSPList)) {
-                                if (flagSuaAnh) {
-                                    saveAndGetImgLinkWhenEdit(loaiSP, imgUriWhenEdit);
-                                } else {
-                                    updateLoaiSP(loaiSP);
-                                }
-                            }
+                public void iAfterGetAllObject(Object obj) {
+                    List<LoaiSP> loaiSPList = (List<LoaiSP>) obj;
+                    if (validSPWhenEdit(loaiSP, loaiSPList)) {
+                        if (flagSuaAnh) {
+                            saveAndGetImgLinkWhenEdit(loaiSP, imgUriWhenEdit);
                         } else {
-                            OverUtils.makeToast(getContext(), OverUtils.ERROR_MESSAGE);
-                            dgEditLoading.setVisibility(View.INVISIBLE);
+                            updateLoaiSP(loaiSP);
                         }
-                    } else {
-                        OverUtils.makeToast(getContext(), OverUtils.ERROR_MESSAGE);
-                        dgEditLoading.setVisibility(View.INVISIBLE);
                     }
                 }
+
+                @Override
+                public void onError(DatabaseError error) {
+                    OverUtils.makeToast(getContext(), ERROR_MESSAGE);
+                    dgEditLoading.setVisibility(View.INVISIBLE);
+                }
             });
+
         }
     }
+
+
+
+
 
     public boolean validSPWhenEdit(LoaiSP loaiSP, List<LoaiSP> loaiSPList) {
         for (LoaiSP lSp : loaiSPList) {
@@ -442,7 +435,7 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
         }).addOnFailureListener(new OnFailureListener() {
             @Override
             public void onFailure(@NonNull Exception e) {
-                OverUtils.makeToast(getContext(), OverUtils.ERROR_MESSAGE);
+                OverUtils.makeToast(getContext(), ERROR_MESSAGE);
                 dgAddLoading.setVisibility(View.INVISIBLE);
             }
         });
@@ -465,20 +458,26 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
     }
 
     private void updateLoaiSP(LoaiSP loaiSP) {
-        LoaiSanPhamUtils.getDbRfLoaiSP().child(loaiSP.getId())
-                .updateChildren(loaiSP.toMap(), new DatabaseReference.CompletionListener() {
-                    @Override
-                    public void onComplete(@Nullable DatabaseError error, @NonNull DatabaseReference ref) {
-                        if (error == null) {
-                            OverUtils.makeToast(getContext(), "Sửa thành công");
-                            editDialog.dismiss();
-                        } else {
-                            OverUtils.makeToast(getContext(), OverUtils.ERROR_MESSAGE);
-                        }
-                        dgEditLoading.setVisibility(View.INVISIBLE);
-                    }
-                });
+       ProductTypeDao.getInstance().updateProductType(loaiSP, loaiSP.toMap(), new IAfterUpdateObject() {
+           @Override
+           public void onSuccess(Object obj) {
+               OverUtils.makeToast(getContext(), "Sửa thành công");
+               dgEditLoading.setVisibility(View.INVISIBLE);
+               editDialog.dismiss();
+
+           }
+
+           @Override
+           public void onError(DatabaseError error) {
+                OverUtils.makeToast(getContext(), ERROR_MESSAGE);
+               dgEditLoading.setVisibility(View.INVISIBLE);
+           }
+       });
     }
+
+
+
+
 
 
     @Override
@@ -504,7 +503,7 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
                     dgEditImgLoaiSP.setImageURI(uri);
                     imgUriWhenEdit = uri;
                 } else {
-                    OverUtils.makeToast(getContext(), OverUtils.ERROR_MESSAGE);
+                    OverUtils.makeToast(getContext(), ERROR_MESSAGE);
                 }
             } else {
                 imgUriWhenEdit = null;
@@ -513,55 +512,4 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
         }
     }
 
-
-//    LoaiSanPhamUtils.getDbRfLoaiSP().addChildEventListener(new ChildEventListener() {
-//        @Override
-//        public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-//            LoaiSP loaiSP = snapshot.getValue(LoaiSP.class);
-//            if (loaiSP != null) {
-//                loaiSPList.add(loaiSP);
-//                loaiSPAdapter.notifyDataSetChanged();
-//            }
-//        }
-//
-//        @Override
-//        public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-//            LoaiSP loaiSP = snapshot.getValue(LoaiSP.class);
-//            if (loaiSP == null && loaiSPList.isEmpty()) {
-//                return;
-//            }
-//
-//            for (int i = 0; i < loaiSPList.size(); i++) {
-//                if (loaiSP.getId() == loaiSPList.get(i).getId()) {
-//                    loaiSPList.set(i, loaiSP);
-//                }
-//            }
-//            loaiSPAdapter.notifyDataSetChanged();
-//        }
-//
-//        @Override
-//        public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-//            LoaiSP loaiSP = snapshot.getValue(LoaiSP.class);
-//            if (loaiSP == null && loaiSPList.isEmpty()) {
-//                return;
-//            }
-//
-//            for (int i = 0; i < loaiSPList.size(); i++) {
-//                if (loaiSP.getId() == loaiSPList.get(i).getId()) {
-//                    loaiSPList.remove(loaiSPList.get(i));
-//                }
-//            }
-//            loaiSPAdapter.notifyDataSetChanged();
-//        }
-//
-//        @Override
-//        public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-//
-//        }
-//
-//        @Override
-//        public void onCancelled(@NonNull DatabaseError error) {
-//
-//        }
-//    });
 }

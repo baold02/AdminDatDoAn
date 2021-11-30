@@ -7,4 +7,11 @@
     <string name="thongKe_nav">Thống kê</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="nhan_de_chon_trang_thai">Nhấn để chọn trạng thái</string>
+    <string-array name="choice_trang_thai_sp">
+        <item>HOAT_DONG</item>
+        <item>DUNG_KINH_DOANH</item>
+        <item>HET_HANG</item>
+        <item>SAP_RA_MAT</item>
+    </string-array>
 </resources>

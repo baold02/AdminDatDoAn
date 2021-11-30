@@ -14,14 +14,12 @@ import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
 import com.nhomduan.quanlydathang_admin.R;
-import com.nhomduan.quanlydathang_admin.fragment.DanhSachDonHangByTTFragment;
 import com.nhomduan.quanlydathang_admin.fragment.DanhSachDonHangFragment;
 import com.nhomduan.quanlydathang_admin.fragment.DanhSachLoaiSanPhamFragment;
+import com.nhomduan.quanlydathang_admin.fragment.DanhSachSanPhamFragment;
 import com.nhomduan.quanlydathang_admin.fragment.ShipperFragment;
 import com.nhomduan.quanlydathang_admin.fragment.UserFragment;
-import com.nhomduan.quanlydathang_admin.fragment.SanPhamFragment;
 import com.nhomduan.quanlydathang_admin.fragment.ThongKeFragment;
-import com.nhomduan.quanlydathang_admin.model.TrangThai;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
 
@@ -70,7 +68,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 replaceFragment(new DanhSachDonHangFragment());
                 break;
             case R.id.nav_sanPham:
-                replaceFragment(new SanPhamFragment());
+                replaceFragment(new DanhSachSanPhamFragment());
                 break;
             case R.id.nav_loaiSP:
                 replaceFragment(new DanhSachLoaiSanPhamFragment());

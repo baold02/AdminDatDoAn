@@ -55,9 +55,13 @@ public class LoaiSP {
 
     public Map<String, Object> toMap() {
         Map<String, Object> map = new HashMap<String, Object>();
-        map.put("id", id);
         map.put("name", name);
         map.put("hinhanh", hinhanh);
+        return map;
+    }
+
+    public Map<String, Object> toMapSoLuongSanPham() {
+        Map<String, Object> map = new HashMap<String, Object>();
         map.put("soSanPhamThuocLoai", soSanPhamThuocLoai);
         return map;
     }

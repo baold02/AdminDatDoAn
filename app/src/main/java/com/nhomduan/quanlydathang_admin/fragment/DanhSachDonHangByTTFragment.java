@@ -1,6 +1,5 @@
 package com.nhomduan.quanlydathang_admin.fragment;
 
-import android.annotation.SuppressLint;
 import android.content.Intent;
 import android.os.Bundle;
 
@@ -15,19 +14,18 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.Query;
 import com.nhomduan.quanlydathang_admin.R;
-import com.nhomduan.quanlydathang_admin.Utils.DonHangUtils;
 import com.nhomduan.quanlydathang_admin.activities.DonHangChiTietActivity;
 import com.nhomduan.quanlydathang_admin.adapter.DonHangAdapter;
+import com.nhomduan.quanlydathang_admin.dao.OrderDao;
+import com.nhomduan.quanlydathang_admin.interface_.IAfterGetAllObject;
 import com.nhomduan.quanlydathang_admin.interface_.OnClickItem;
 import com.nhomduan.quanlydathang_admin.model.DonHang;
 import com.nhomduan.quanlydathang_admin.model.TrangThai;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 
@@ -69,59 +67,16 @@ public class DanhSachDonHangByTTFragment extends Fragment implements OnClickItem
         rcvDanhSachDonHang.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
         rcvDanhSachDonHang.setAdapter(donHangAdapter);
 
-        Query query = DonHangUtils.getDbRfDonHang().orderByChild("trang_thai").equalTo(this.trangThai.getTrangThai());
-        query.addChildEventListener(new ChildEventListener() {
-            @SuppressLint("NotifyDataSetChanged")
+        OrderDao.getInstance().getDonHangByTrangThai(trangThai, new IAfterGetAllObject() {
             @Override
-            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                DonHang donHang = snapshot.getValue(DonHang.class);
-                if(donHang != null) {
-                    donHangList.add(donHang);
-                    donHangAdapter.notifyDataSetChanged();
-                }
-            }
-
-            @SuppressLint("NotifyDataSetChanged")
-            @Override
-            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                DonHang donHang = snapshot.getValue(DonHang.class);
-                if(donHang == null || donHangList == null || donHangList.isEmpty()) {
-                    return;
-                }
-                int viTri = -1;
-                for(int i = 0; i < donHangList.size(); i++) {
-                    if(donHangList.get(i).getId().equals(donHang.getId())) {
-                        viTri = i;
-                    }
-                }
-                donHangList.set(viTri, donHang);
-                donHangAdapter.notifyDataSetChanged();
-            }
-
-            @SuppressLint("NotifyDataSetChanged")
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                DonHang donHang = snapshot.getValue(DonHang.class);
-                if(donHang == null || donHangList == null || donHangList.isEmpty()) {
-                    return;
-                }
-                int viTri = -1;
-                for(int i = 0; i < donHangList.size(); i++) {
-                    if(donHangList.get(i).getId().equals(donHang.getId())) {
-                        viTri = i;
-                    }
-                }
-                donHangList.remove(viTri);
-                donHangAdapter.notifyDataSetChanged();
+            public void iAfterGetAllObject(Object obj) {
+                donHangList = (List<DonHang>) obj;
+                Collections.reverse(donHangList);
+                donHangAdapter.setData(donHangList);
             }
 
             @Override
-            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+            public void onError(DatabaseError error) {
 
             }
         });

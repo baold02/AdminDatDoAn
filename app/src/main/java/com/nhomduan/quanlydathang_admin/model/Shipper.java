@@ -1,6 +1,8 @@
 package com.nhomduan.quanlydathang_admin.model;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Shipper implements Serializable {
     private String id;
@@ -47,5 +49,12 @@ public class Shipper implements Serializable {
 
     public void setPhone_number(String phone_number) {
         this.phone_number = phone_number;
+    }
+
+    public Map<String, Object> toMap() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("name", name);
+        map.put("phone_number", phone_number);
+        return map;
     }
 }

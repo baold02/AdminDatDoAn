@@ -50,7 +50,6 @@ public class DanhSachDonHangFragment extends Fragment {
     private void setUpTabLayoutAndViewPager() {
         DanhSachDonHangPagerAdapter danhSachDonHangPagerAdapter = new DanhSachDonHangPagerAdapter(fragmentActivity);
         viewpager.setAdapter(danhSachDonHangPagerAdapter);
-
         new TabLayoutMediator(tabLayout, viewpager,
                 (tab, position) -> tab.setText(TrangThai.values()[position].getTrangThai())).attach();
         viewpager.setUserInputEnabled(true);
@@ -72,21 +71,6 @@ public class DanhSachDonHangFragment extends Fragment {
     }
 
 
-//    @Override
-//    public void onClickItem(Object obj) {
-//        Fragment fragment = new DonHangChiTietFragment();
-//        Bundle bundle = new Bundle();
-//        bundle.putSerializable("don_hang", (DonHang) obj);
-//        fragment.setArguments(bundle);
-//        fragmentManager.beginTransaction()
-//                .replace(R.id.donHangContainer, fragment)
-//                .addToBackStack(null)
-//                .commit();
-//    }
-//
-//    @Override
-//    public void onUpdateItem(Object obj) {}
-//
-//    @Override
-//    public void onDeleteItem(Object obj) {}
+
+
 }

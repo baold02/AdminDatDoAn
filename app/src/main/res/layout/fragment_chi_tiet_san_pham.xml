@@ -152,6 +152,23 @@
                 android:layout_height="wrap_content"
                 android:hint="Thời gian chế biến" />
 
+            <TextView
+                android:layout_marginTop="5dp"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:text="Trạng Thái:   (nhấn để đổi)"
+                android:textColor="@color/black"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvTrangThai"
+                android:layout_marginTop="8dp"
+                android:layout_width="match_parent"
+                android:layout_height="40dp"
+                android:gravity="center_vertical"
+                android:textSize="18sp"
+                android:paddingLeft="5dp" />
+
 
             <LinearLayout
                 android:orientation="horizontal"

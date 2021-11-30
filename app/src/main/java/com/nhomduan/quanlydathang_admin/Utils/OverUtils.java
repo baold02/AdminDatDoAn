@@ -14,6 +14,11 @@ import java.util.Locale;
 
 public class OverUtils {
 
+    public static final String HOAT_DONG = "HOAT_DONG";
+    public static final String DUNG_KINH_DOANH = "DUNG_KINH_DOANH";
+    public static final String HET_HANG = "HET_HANG";
+    public static final String SAP_RA_MAT = "SAP_RA_MAT";
+
     public static SimpleDateFormat simpleDateFormat = new SimpleDateFormat("hh:mm * dd/MM/yyyy");
     private static Locale locale = new Locale("vi", "VN");
     public static NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(locale);

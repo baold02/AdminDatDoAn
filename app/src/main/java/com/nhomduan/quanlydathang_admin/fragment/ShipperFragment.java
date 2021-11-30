@@ -2,9 +2,7 @@ package com.nhomduan.quanlydathang_admin.fragment;
 
 import static com.nhomduan.quanlydathang_admin.Utils.OverUtils.ERROR_MESSAGE;
 
-import android.app.AlertDialog;
 import android.app.Dialog;
-import android.content.DialogInterface;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -22,20 +20,18 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.database.ChildEventListener;
-import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
 import com.nhomduan.quanlydathang_admin.R;
 import com.nhomduan.quanlydathang_admin.Utils.OverUtils;
-import com.nhomduan.quanlydathang_admin.Utils.ShipperUtils;
 import com.nhomduan.quanlydathang_admin.activities.MainActivity;
 import com.nhomduan.quanlydathang_admin.adapter.ShipperAdapter;
 import com.nhomduan.quanlydathang_admin.dao.ShiperDao;
+import com.nhomduan.quanlydathang_admin.interface_.IAfterDeleteObject;
+import com.nhomduan.quanlydathang_admin.interface_.IAfterGetAllObject;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterInsertObject;
+import com.nhomduan.quanlydathang_admin.interface_.IAfterUpdateObject;
 import com.nhomduan.quanlydathang_admin.interface_.OnClickItem;
 import com.nhomduan.quanlydathang_admin.model.Shipper;
 
@@ -95,18 +91,18 @@ public class ShipperFragment extends Fragment implements OnClickItem {
                     public void onClick(View v) {
                         String tenShipper = edtThemTenShipper.getText().toString().trim();
                         String sdtShipper = edtThemSDTShipper.getText().toString().trim();
-                        if(tenShipper.length() == 0 || sdtShipper.length() == 0) {
+                        if (tenShipper.length() == 0 || sdtShipper.length() == 0) {
                             OverUtils.makeToast(getContext(), "Vui lòng nhập đầy đủ thông tin");
                             return;
                         }
-                        ShipperUtils.getDbRfShipper().get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                        ShiperDao.getInstance().getAllShipper(new IAfterGetAllObject() {
                             @Override
-                            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                                if (task.isSuccessful() && task.getResult() != null) {
-                                    List<Shipper> shipperList = ShipperUtils.getAllShipper(task.getResult());
+                            public void iAfterGetAllObject(Object obj) {
+                                if (obj != null) {
+                                    shipperList = (List<Shipper>) obj;
                                     boolean validShipper = validShipper(sdtShipper, shipperList);
                                     if (validShipper) {
-                                        String key = ShipperUtils.getDbRfShipper().push().getKey();
+                                        String key = FirebaseDatabase.getInstance().getReference().push().getKey();
                                         Shipper shipper = new Shipper();
                                         shipper.setId(key);
                                         shipper.setName(tenShipper);
@@ -125,6 +121,11 @@ public class ShipperFragment extends Fragment implements OnClickItem {
                                     }
                                 }
                             }
+
+                            @Override
+                            public void onError(DatabaseError error) {
+
+                            }
                         });
                     }
                 });
@@ -134,6 +135,7 @@ public class ShipperFragment extends Fragment implements OnClickItem {
         });
         setUpListShipper();
     }
+
 
     private void setUpToolbar(View view) {
         setHasOptionsMenu(true);
@@ -149,54 +151,15 @@ public class ShipperFragment extends Fragment implements OnClickItem {
         rcvShipper.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
         rcvShipper.setAdapter(shipperAdapter);
 
-        ShipperUtils.getDbRfShipper().addChildEventListener(new ChildEventListener() {
+        ShiperDao.getInstance().getAllShipperListener(new IAfterGetAllObject() {
             @Override
-            public void onChildAdded(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                Shipper shipper = snapshot.getValue(Shipper.class);
-                if (shipper != null) {
-                    shipperList.add(shipper);
-                    shipperAdapter.notifyDataSetChanged();
-                }
+            public void iAfterGetAllObject(Object obj) {
+                shipperList = (List<Shipper>) obj;
+                shipperAdapter.setData(shipperList);
             }
 
             @Override
-            public void onChildChanged(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-                Shipper shipper = snapshot.getValue(Shipper.class);
-                if (shipper == null && shipperList == null) {
-                    return;
-                }
-                for (int i = 0; i < shipperList.size(); i++) {
-                    if (shipperList.get(i).getId().equals(shipper.getId())) {
-                        shipperList.set(i, shipper);
-                        shipperAdapter.notifyDataSetChanged();
-                        break;
-                    }
-                }
-
-            }
-
-            @Override
-            public void onChildRemoved(@NonNull DataSnapshot snapshot) {
-                Shipper shipper = snapshot.getValue(Shipper.class);
-                if (shipper == null && shipperList == null) {
-                    return;
-                }
-                for (int i = 0; i < shipperList.size(); i++) {
-                    if (shipperList.get(i).getId().equals(shipper.getId())) {
-                        shipperList.remove(i);
-                        shipperAdapter.notifyDataSetChanged();
-                        break;
-                    }
-                }
-            }
-
-            @Override
-            public void onChildMoved(@NonNull DataSnapshot snapshot, @Nullable String previousChildName) {
-
-            }
-
-            @Override
-            public void onCancelled(@NonNull DatabaseError error) {
+            public void onError(DatabaseError error) {
 
             }
         });
@@ -221,7 +184,8 @@ public class ShipperFragment extends Fragment implements OnClickItem {
     }
 
     @Override
-    public void onClickItem(Object obj) {}
+    public void onClickItem(Object obj) {
+    }
 
     @Override
     public void onUpdateItem(Object obj) {
@@ -258,30 +222,37 @@ public class ShipperFragment extends Fragment implements OnClickItem {
             public void onClick(View v) {
                 String tenShipper = edtSuaTenShipper.getText().toString().trim();
                 String sdtShipper = edtSuaSDTShipper.getText().toString().trim();
-                if(tenShipper.length() == 0 || sdtShipper.length() == 0) {
+                if (tenShipper.length() == 0 || sdtShipper.length() == 0) {
                     OverUtils.makeToast(getContext(), "Vui lòng nhập đầy đủ thông tin");
                     return;
                 }
-                ShipperUtils.getDbRfShipper().get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                ShiperDao.getInstance().getAllShipper(new IAfterGetAllObject() {
                     @Override
-                    public void onComplete(@NonNull Task<DataSnapshot> task) {
-                        if(task.isSuccessful() && task.getResult() != null) {
-                            List<Shipper> shipperList = ShipperUtils.getAllShipper(task.getResult());
-                            boolean validShipper = validShipperWhenEdit(currentShipper ,sdtShipper, shipperList);
-                            if(validShipper) {
-                                ShipperUtils.getDbRfShipper().child(currentShipper.getId())
-                                        .setValue(new Shipper(currentShipper.getId(), tenShipper, sdtShipper), new DatabaseReference.CompletionListener() {
-                                            @Override
-                                            public void onComplete(@Nullable DatabaseError error, @NonNull DatabaseReference ref) {
-                                                if(error == null) {
-                                                    OverUtils.makeToast(getContext(), "Sửa thành công");
-                                                    dialog.cancel();
-                                                }
-                                            }
-                                        });
-                            }
+                    public void iAfterGetAllObject(Object obj) {
+                        if (obj != null) {
+                            List<Shipper> shipperList = (List<Shipper>) obj;
+                            boolean validShipper = validShipperWhenEdit(currentShipper, sdtShipper, shipperList);
+                            if (validShipper) {
+                                Shipper newShipper = new Shipper(currentShipper.getId(), tenShipper, sdtShipper);
+                                ShiperDao.getInstance().updateShipper(newShipper, newShipper.toMap(), new IAfterUpdateObject() {
+                                    @Override
+                                    public void onSuccess(Object obj) {
+                                        dialog.cancel();
+                                        OverUtils.makeToast(getContext(), "Update thành công");
+                                    }
 
+                                    @Override
+                                    public void onError(DatabaseError error) {
+
+                                    }
+                                });
+                            }
                         }
+                    }
+
+                    @Override
+                    public void onError(DatabaseError error) {
+
                     }
                 });
             }
@@ -292,11 +263,11 @@ public class ShipperFragment extends Fragment implements OnClickItem {
 
 
     private boolean validShipperWhenEdit(Shipper currentShipper, String sdtShipper, List<Shipper> shipperList) {
-        for(Shipper shipper : shipperList) {
-            if(shipper.getId().equals(currentShipper.getId())) {
+        for (Shipper shipper : shipperList) {
+            if (shipper.getId().equals(currentShipper.getId())) {
                 continue;
             } else {
-                if(sdtShipper.equals(shipper.getPhone_number())) {
+                if (sdtShipper.equals(shipper.getPhone_number())) {
                     OverUtils.makeToast(getContext(), "Số điện thoại này đang thuộc một shipper khác");
                     return false;
                 }
@@ -308,21 +279,17 @@ public class ShipperFragment extends Fragment implements OnClickItem {
     @Override
     public void onDeleteItem(Object obj) {
         Shipper shipper = (Shipper) obj;
-        new AlertDialog.Builder(getContext())
-                .setTitle("Xóa shipper")
-                .setMessage("Bạn có chắc chắn muốn xóa shipper này ?")
-                .setNegativeButton("HỦY", null)
-                .setPositiveButton("XÓA", new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        ShipperUtils.getDbRfShipper().child(shipper.getId()).removeValue(new DatabaseReference.CompletionListener() {
-                            @Override
-                            public void onComplete(@Nullable DatabaseError error, @NonNull DatabaseReference ref) {
-                                OverUtils.makeToast(getContext(), "Xóa thành công");
-                            }
-                        });
-                    }
-                }).show();
+        ShiperDao.getInstance().deleteShiper(getContext(), shipper, new IAfterDeleteObject() {
+            @Override
+            public void onSuccess(Object obj) {
+                OverUtils.makeToast(getContext(), "Xóa thành công");
+            }
+
+            @Override
+            public void onError(DatabaseError error) {
+
+            }
+        });
 
     }
 }

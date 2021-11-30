@@ -65,7 +65,25 @@
         <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang/app/src/main/res/layout/item_user.xml" value="0.21302083333333333" />
         <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang/app/src/main/res/menu/menu_main.xml" value="0.1" />
         <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang/app/src/main/res/menu/menu_navigation.xml" value="0.20729166666666668" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/drawable/bg_border_button.xml" value="0.2703125" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/drawable/ic_calendar_24.xml" value="0.2703125" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/drawable/ic_timer_24.xml" value="0.2703125" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/drawable/update_hearth.xml" value="0.2703125" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/layout/activity_don_hang_chi_tiet.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/layout/activity_main.xml" value="0.203125" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/layout/activity_show_product.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/layout/activity_test.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/layout/fragment_chi_tiet_san_pham.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/layout/fragment_danh_sach_don_hang.xml" value="0.1" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/layout/fragment_danh_sach_don_hang_by_t_t.xml" value="0.1" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/layout/fragment_danh_sach_san_pham_by_loai_s_p.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/layout/fragment_loai_s_p.xml" value="0.23425925925925925" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/layout/fragment_san_pham.xml" value="0.23125" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/layout/fragment_sanpham.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/layout/fragment_xem_san_pham.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/layout/item_don_hang_chi_tiet.xml" value="0.24814814814814815" />
         <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/layout/item_loai_sp.xml" value="0.25416666666666665" />
+        <entry key="..\:/Users/Admin/Desktop/du_an/QuanLyBanHang_Admin/app/src/main/res/layout/item_san_pham.xml" value="0.25416666666666665" />
       </map>
     </option>
   </component>

@@ -12,40 +12,36 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
+import androidx.viewpager2.widget.ViewPager2;
 
-import com.google.android.gms.tasks.OnCompleteListener;
-import com.google.android.gms.tasks.Task;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
-import com.google.firebase.database.DataSnapshot;
+import com.google.android.material.tabs.TabLayout;
+import com.google.android.material.tabs.TabLayoutMediator;
 import com.google.firebase.database.DatabaseError;
 import com.nhomduan.quanlydathang_admin.R;
 import com.nhomduan.quanlydathang_admin.Utils.OverUtils;
-import com.nhomduan.quanlydathang_admin.Utils.ProductUtils;
 import com.nhomduan.quanlydathang_admin.activities.MainActivity;
-import com.nhomduan.quanlydathang_admin.adapter.SanPhamAdapter;
-import com.nhomduan.quanlydathang_admin.dao.ProductDao;
-import com.nhomduan.quanlydathang_admin.interface_.IAfterDeleteObject;
-import com.nhomduan.quanlydathang_admin.interface_.OnClickItem;
-import com.nhomduan.quanlydathang_admin.model.Product;
+import com.nhomduan.quanlydathang_admin.adapter.DanhSachSanPhamPagerAdapter;
+import com.nhomduan.quanlydathang_admin.dao.ProductTypeDao;
+import com.nhomduan.quanlydathang_admin.interface_.IAfterGetAllObject;
+import com.nhomduan.quanlydathang_admin.model.LoaiSP;
 
 import java.util.ArrayList;
 import java.util.List;
 
-public class DanhSachSanPhamFragment extends Fragment implements OnClickItem {
+public class DanhSachSanPhamFragment extends Fragment{
 
     private Toolbar toolbar;
     private FloatingActionButton fBtnAddSanPham;
-    private RecyclerView rcvDanhSachSanPham;
+    private TabLayout tabLayout;
+    private ViewPager2 viewpager;
+
 
     private FragmentManager mFragmentManager;
     private MainActivity activity;
 
-    private List<Product> productList;
-    private SanPhamAdapter sanPhamAdapter;
-
+    private List<LoaiSP> loaiSPList;
+    private DanhSachSanPhamPagerAdapter danhSachSanPhamPagerAdapter;
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -63,92 +59,51 @@ public class DanhSachSanPhamFragment extends Fragment implements OnClickItem {
         activity = (MainActivity) requireActivity();
         activity.setSupportActionBar(toolbar);
 
-        setUpListSanPham();
+        setUpTabLayoutAndViewPager();
         setUpfBtnAddSanPham();
+    }
+
+    private void setUpTabLayoutAndViewPager() {
+        loaiSPList = new ArrayList<>();
+        danhSachSanPhamPagerAdapter = new DanhSachSanPhamPagerAdapter(getChildFragmentManager(), this.getLifecycle(), loaiSPList);
+        viewpager.setAdapter(danhSachSanPhamPagerAdapter);
+        new TabLayoutMediator(tabLayout, viewpager,
+                (tab, position) -> tab.setText(loaiSPList.get(position).getName())).attach();
+        viewpager.setUserInputEnabled(false);
+
+        ProductTypeDao.getInstance().getAllProductTypeListener(new IAfterGetAllObject() {
+            @Override
+            public void iAfterGetAllObject(Object obj) {
+                loaiSPList = (List<LoaiSP>) obj;
+                danhSachSanPhamPagerAdapter.setData(loaiSPList);
+            }
+
+            @Override
+            public void onError(DatabaseError error) {
+                OverUtils.makeToast(getContext(), ERROR_MESSAGE);
+            }
+        });
     }
 
     private void setUpfBtnAddSanPham() {
         fBtnAddSanPham.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                mFragmentManager.beginTransaction()
-                        .replace(R.id.sanPhamContainer, new ThemSanPhamFragment())
+                activity.getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.contentFrame, new ThemSanPhamFragment())
                         .addToBackStack(null)
                         .commit();
             }
         });
     }
 
-    private void setUpListSanPham() {
-        productList = new ArrayList<>();
-        sanPhamAdapter = new SanPhamAdapter(productList, this);
-        rcvDanhSachSanPham.setLayoutManager(new LinearLayoutManager(getContext()));
-        rcvDanhSachSanPham.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
-        rcvDanhSachSanPham.setAdapter(sanPhamAdapter);
-        getProducList();
-    }
-
-    public void getProducList() {
-        ProductUtils.getDbRfProduct().get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
-            @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                if (task.isSuccessful()) {
-                    DataSnapshot dataSnapshot = task.getResult();
-                    if (dataSnapshot != null) {
-                        productList = ProductUtils.getProductUser(dataSnapshot);
-                        sanPhamAdapter.setData(productList);
-                    }
-                } else {
-                    OverUtils.makeToast(getContext(), ERROR_MESSAGE);
-                }
-
-            }
-        });
-    }
 
     private void initView(View view) {
-        rcvDanhSachSanPham = view.findViewById(R.id.rcvDanhSachSanPham);
+        tabLayout = view.findViewById(R.id.tabLayout);
+        viewpager = view.findViewById(R.id.viewpager);
         toolbar = view.findViewById(R.id.toolbar);
         fBtnAddSanPham = view.findViewById(R.id.f_btnAddSanPham);
     }
 
-    @Override
-    public void onClickItem(Object obj) {
-        Product product = (Product) obj;
-    }
 
-    @Override
-    public void onUpdateItem(Object obj) {
-        Product product = (Product) obj;
-        UpdateSanPhamFragment updateSanPhamFragment = new UpdateSanPhamFragment();
-        Bundle bundle = new Bundle();
-        bundle.putSerializable("product", product);
-        updateSanPhamFragment.setArguments(bundle);
-        mFragmentManager.beginTransaction()
-                .replace(R.id.sanPhamContainer, updateSanPhamFragment, null)
-                .addToBackStack("XemSPToUpdateSP")
-                .commit();
-    }
-
-
-    @Override
-    public void onDeleteItem(Object obj) {
-        Product product = (Product) obj;
-        if (product != null) {
-            ProductDao.getInstance().deleteProduct(getContext(),
-                    product, new IAfterDeleteObject() {
-                        @Override
-                        public void onSuccess(Object obj) {
-                            OverUtils.makeToast(getContext(), "Xóa sản phẩm thành công");
-                            getProducList();
-                        }
-
-                        @Override
-                        public void onError(DatabaseError error) {
-                            OverUtils.makeToast(getContext(), ERROR_MESSAGE);
-                        }
-                    });
-        }
-
-    }
 }

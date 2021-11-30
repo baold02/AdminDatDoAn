@@ -1,6 +1,8 @@
 package com.nhomduan.quanlydathang_admin.model;
 
 import java.io.Serializable;
+import java.util.HashMap;
+import java.util.Map;
 
 public class Product implements Serializable {
     private String id;
@@ -16,6 +18,7 @@ public class Product implements Serializable {
     private int rate;
     private String khau_phan;
     private int so_luong_da_ban;
+    private String trang_thai;
 
 
     public Product() {
@@ -125,5 +128,23 @@ public class Product implements Serializable {
         this.so_luong_da_ban = so_luong_da_ban;
     }
 
+    public String getTrang_thai() {
+        return trang_thai;
+    }
 
+    public void setTrang_thai(String trang_thai) {
+        this.trang_thai = trang_thai;
+    }
+
+    public Map<String, Object> toMapSPDB() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("so_luong_da_ban", so_luong_da_ban);
+        return  map;
+    }
+
+    public Map<String, Object> toMapTrangThaiSP() {
+        Map<String, Object> map = new HashMap<String, Object>();
+        map.put("trang_thai", trang_thai);
+        return  map;
+    }
 }

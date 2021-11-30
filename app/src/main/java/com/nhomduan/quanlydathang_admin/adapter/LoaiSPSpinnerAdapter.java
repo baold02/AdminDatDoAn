@@ -26,6 +26,11 @@ public class LoaiSPSpinnerAdapter extends BaseAdapter {
         this.loaiSPList = loaiSPList;
     }
 
+    public void setData(List<LoaiSP> loaiSPList) {
+        this.loaiSPList = loaiSPList;
+        notifyDataSetChanged();
+    }
+
     @Override
     public int getCount() {
         if(loaiSPList != null) {
@@ -71,4 +76,6 @@ public class LoaiSPSpinnerAdapter extends BaseAdapter {
         }
         return convertView;
     }
+
+
 }

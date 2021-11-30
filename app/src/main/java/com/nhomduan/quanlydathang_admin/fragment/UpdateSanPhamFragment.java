@@ -24,21 +24,27 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.Spinner;
-import android.widget.Toast;
+import android.widget.TextView;
 
-import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Task;
-import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.StorageReference;
 import com.google.firebase.storage.UploadTask;
 import com.nhomduan.quanlydathang_admin.R;
-import com.nhomduan.quanlydathang_admin.Utils.LoaiSanPhamUtils;
 import com.nhomduan.quanlydathang_admin.Utils.OverUtils;
-import com.nhomduan.quanlydathang_admin.Utils.ProductUtils;
+import com.nhomduan.quanlydathang_admin.activities.MainActivity;
+import com.nhomduan.quanlydathang_admin.activities.ShowProductActivity;
 import com.nhomduan.quanlydathang_admin.adapter.LoaiSPSpinnerAdapter;
+import com.nhomduan.quanlydathang_admin.dao.ProductDao;
+import com.nhomduan.quanlydathang_admin.dao.ProductTypeDao;
+import com.nhomduan.quanlydathang_admin.dialog.SingleChoiceDialog;
+import com.nhomduan.quanlydathang_admin.interface_.IAfterGetAllObject;
+import com.nhomduan.quanlydathang_admin.interface_.IAfterInsertObject;
+import com.nhomduan.quanlydathang_admin.interface_.IAfterUpdateObject;
 import com.nhomduan.quanlydathang_admin.model.LoaiSP;
 import com.nhomduan.quanlydathang_admin.model.Product;
+import com.nhomduan.quanlydathang_admin.model.TrangThai;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -59,11 +65,13 @@ public class UpdateSanPhamFragment extends Fragment {
     private EditText edHuongDanBaoQuan;
     private EditText edThoiGianCheBien;
     private Button btnLuuSanPham;
+    private TextView tvTrangThai;
+
 
     private Product product;
 
     private String loaiSPId;
-    LoaiSPSpinnerAdapter loaiSPAdapter;
+    private LoaiSPSpinnerAdapter loaiSPAdapter;
 
     private Uri imgUri;
     private boolean flagSuaAnh;
@@ -73,9 +81,9 @@ public class UpdateSanPhamFragment extends Fragment {
     private Toolbar toolbar;
     private FragmentManager fragmentManager;
 
+    private MainActivity activity;
 
-
-
+    private List<LoaiSP> loaiSPList;
 
 
     @Override
@@ -93,7 +101,7 @@ public class UpdateSanPhamFragment extends Fragment {
         toolbar.setNavigationOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View view) {
-                fragmentManager.popBackStack();
+                activity.getSupportFragmentManager().popBackStack();
             }
         });
 
@@ -104,7 +112,7 @@ public class UpdateSanPhamFragment extends Fragment {
             @Override
             public void onClick(View view) {
                 Product product = validateInputSP();
-                if(product != null) {
+                if (product != null) {
                     chinhSuaSanPham(product);
                 }
             }
@@ -124,20 +132,17 @@ public class UpdateSanPhamFragment extends Fragment {
     }
 
 
-
-
     private void chinhSuaSanPham(Product product) {
         makeProgressBar();
-        ProductUtils.getDbRfProduct().get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+        ProductDao.getInstance().getAllProduct(new IAfterGetAllObject() {
             @Override
-            public void onComplete(@NonNull Task<DataSnapshot> task) {
-                DataSnapshot dataSnapshot = task.getResult();
-                if(dataSnapshot != null) {
-                    List<Product> productList = ProductUtils.getProductUser(dataSnapshot);
+            public void iAfterGetAllObject(Object obj) {
+                if (obj != null) {
+                    List<Product> productList = (List<Product>) obj;
                     boolean valid = checkProduct(product, productList);
-                    if(valid) {
-                        if(flagSuaAnh) {
-                            if(imgUri == null) {
+                    if (valid) {
+                        if (flagSuaAnh) {
+                            if (imgUri == null) {
                                 OverUtils.makeToast(getContext(), "Vui lòng chọn ảnh");
                                 progressDialog.cancel();
                                 return;
@@ -151,16 +156,20 @@ public class UpdateSanPhamFragment extends Fragment {
                         OverUtils.makeToast(getContext(), "Trùng tên sản phẩm trong hệ thống");
                         progressDialog.cancel();
                     }
-                } else {
-                    OverUtils.makeToast(getContext(), ERROR_MESSAGE);
-                    progressDialog.cancel();
                 }
+            }
+
+            @Override
+            public void onError(DatabaseError error) {
+                OverUtils.makeToast(getContext(), ERROR_MESSAGE);
+                progressDialog.cancel();
             }
         });
     }
 
+
     private void getImgLinkAndPostSanPham(Product product, Uri imgUri) {
-        StorageReference stRef = ProductUtils.getStRfProduct().child("image/sanpham")
+        StorageReference stRef = FirebaseStorage.getInstance().getReference().child("image/sanpham")
                 .child(product.getId() + "*" + System.currentTimeMillis() + "." + getExtensionFile(getContext(), imgUri));
         stRef.putFile(imgUri).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
             @Override
@@ -177,26 +186,29 @@ public class UpdateSanPhamFragment extends Fragment {
     }
 
     private void postSanPham(Product product) {
-        ProductUtils.getDbRfProduct().child(product.getId())
-                .setValue(product).addOnCompleteListener(new OnCompleteListener<Void>() {
+        ProductDao.getInstance().insertProduct(product, new IAfterInsertObject() {
             @Override
-            public void onComplete(@NonNull Task<Void> task) {
-                if (task.isSuccessful()) {
-                    OverUtils.makeToast(getContext(), "Sửa thành công");
-                    UpdateSanPhamFragment.this.product.setName(product.getName());
-                               progressDialog.cancel();
-                } else {
-                    OverUtils.makeToast(getContext(), ERROR_MESSAGE);
-                    progressDialog.cancel();
-                }
+            public void onSuccess(Object obj) {
+                OverUtils.makeToast(getContext(), "Sửa thành công");
+                progressDialog.cancel();
+                Intent intent = new Intent(getContext(), ShowProductActivity.class);
+                intent.putExtra("productId", product.getId());
+                startActivity(intent);
+            }
+
+            @Override
+            public void onError(DatabaseError exception) {
+                OverUtils.makeToast(getContext(), ERROR_MESSAGE);
+                progressDialog.cancel();
             }
         });
     }
 
+
     private boolean checkProduct(Product product, List<Product> productList) {
         for (Product pr : productList) {
             if (pr.getName().equals(product.getName())) {
-                if(pr.getName().equals(this.product.getName())) {
+                if (pr.getName().equals(this.product.getName())) {
                     continue;
                 }
                 OverUtils.makeToast(getContext(), "Đã tồn tại sản phẩm này");
@@ -216,6 +228,7 @@ public class UpdateSanPhamFragment extends Fragment {
         String baoQuan = edBaoQuan.getText().toString().trim();
         String huongDanBaoQuan = edHuongDanBaoQuan.getText().toString().trim();
         String thoiGianCheBien = edThoiGianCheBien.getText().toString().trim();
+        String trangThai = tvTrangThai.getText().toString().trim();
 
         if (name.isEmpty()) {
             OverUtils.makeToast(getContext(), "Cần thêm thông tin sản phẩm");
@@ -250,7 +263,12 @@ public class UpdateSanPhamFragment extends Fragment {
             return null;
         }
 
+
+
         product.setId(this.product.getId());
+        product.setSo_luong_da_ban(this.product.getSo_luong_da_ban());
+        product.setRate(this.product.getRate());
+
         product.setName(name);
         product.setGia_ban(Integer.parseInt(giaBan));
         product.setLoai_sp(loaiSP);
@@ -259,12 +277,13 @@ public class UpdateSanPhamFragment extends Fragment {
         product.setMota(moTaSP);
         product.setThong_tin_bao_quan(huongDanBaoQuan);
         product.setThoiGianCheBien(Integer.parseInt(thoiGianCheBien));
+        product.setTrang_thai(trangThai);
 
         return product;
     }
 
     private void setUpThongTin(Product product) {
-        if(product != null) {
+        if (product != null) {
             edTenSP.setText(product.getName());
             edBaoQuan.setText(product.getBao_quan());
             edHuongDanBaoQuan.setText(product.getThong_tin_bao_quan());
@@ -278,27 +297,23 @@ public class UpdateSanPhamFragment extends Fragment {
                     .into(imgAnhChinhSP);
 
             // set up loại sản phẩm
-            List<LoaiSP> loaiSPList = new ArrayList<>();
-            LoaiSanPhamUtils.getDbRfLoaiSP().get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            loaiSPList = new ArrayList<>();
+            ProductTypeDao.getInstance().getAllProductType(new IAfterGetAllObject() {
                 @Override
-                public void onComplete(@NonNull Task<DataSnapshot> task) {
-                    DataSnapshot dataSnapshot = task.getResult();
-                    if(dataSnapshot != null) {
-                        for(DataSnapshot data : dataSnapshot.getChildren()) {
-                            LoaiSP loaiSP = data.getValue(LoaiSP.class);
-                            loaiSPList.add(loaiSP);
+                public void iAfterGetAllObject(Object obj) {
+                    loaiSPList = (List<LoaiSP>) obj;
+                    loaiSPAdapter = new LoaiSPSpinnerAdapter(getContext(), loaiSPList);
+                    spLoaiSP.setAdapter(loaiSPAdapter);
+                    for (int i = 0; i < loaiSPList.size(); i++) {
+                        if (product.getLoai_sp().equals(loaiSPList.get(i).getId())) {
+                            spLoaiSP.setSelection(i);
                         }
-                        loaiSPAdapter = new LoaiSPSpinnerAdapter(getContext(), loaiSPList);
-                        spLoaiSP.setAdapter(loaiSPAdapter);
-                        for(int i = 0; i < loaiSPList.size(); i++) {
-                            if(product.getId().equals(loaiSPList.get(i).getId())) {
-                                spLoaiSP.setSelection(i);
-                            }
-                        }
-
-                    } else {
-                        OverUtils.makeToast(getContext(),ERROR_MESSAGE);
                     }
+                }
+
+                @Override
+                public void onError(DatabaseError error) {
+                    OverUtils.makeToast(getContext(), ERROR_MESSAGE);
                 }
             });
             spLoaiSP.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
@@ -314,15 +329,46 @@ public class UpdateSanPhamFragment extends Fragment {
                 }
             });
 
+            String[] trangThaiSPList = requireActivity().getResources().getStringArray(R.array.choice_trang_thai_sp);
+            int position = 0;
+            for (int i = 0; i < trangThaiSPList.length; i++) {
+                if (product.getTrang_thai().equals(trangThaiSPList[i])) {
+                    position = i;
+                }
+            }
+
+            tvTrangThai.setText(trangThaiSPList[position]);
+            int finalPosition = position;
+            tvTrangThai.setOnClickListener(v -> {
+                SingleChoiceDialog singleChoiceDialog = new SingleChoiceDialog(trangThaiSPList,
+                        finalPosition,
+                        "Chọn trạng thái sản phẩm",
+                        "Chọn",
+                        "Hủy",
+                        new SingleChoiceDialog.ISingleChoiceDialog() {
+                            @Override
+                            public void onChoice(Object[] objList, int position) {
+                                tvTrangThai.setText((String) objList[position]);
+                            }
+
+                            @Override
+                            public void onCancel() {
+                            }
+                        });
+                singleChoiceDialog.show(requireActivity().getSupportFragmentManager(), "Single choice dialog");
+            });
+
         } else {
             OverUtils.makeToast(getContext(), ERROR_MESSAGE);
         }
     }
 
 
+
+
     private void getDuLieu() {
         Bundle bundle = getArguments();
-        if(bundle != null) {
+        if (bundle != null) {
             Product product = (Product) bundle.getSerializable("product");
             this.product = product;
         }
@@ -339,9 +385,12 @@ public class UpdateSanPhamFragment extends Fragment {
         edHuongDanBaoQuan = view.findViewById(R.id.ed_HuongDanBaoQuan);
         edThoiGianCheBien = view.findViewById(R.id.ed_ThoiGianCheBien);
         btnLuuSanPham = view.findViewById(R.id.btn_LuuSanPham);
+        tvTrangThai = view.findViewById(R.id.tvTrangThai);
 
         toolbar = view.findViewById(R.id.toolbar);
         fragmentManager = getParentFragmentManager();
+
+        activity = (MainActivity) getActivity();
 
     }
 
@@ -349,9 +398,9 @@ public class UpdateSanPhamFragment extends Fragment {
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if(requestCode == REQUEST_CODE_IMG) {
-            if(resultCode == RESULT_OK) {
-                if(data != null) {
+        if (requestCode == REQUEST_CODE_IMG) {
+            if (resultCode == RESULT_OK) {
+                if (data != null) {
                     Uri uri = data.getData();
                     imgUri = uri;
                     imgAnhChinhSP.setImageURI(imgUri);
@@ -365,7 +414,7 @@ public class UpdateSanPhamFragment extends Fragment {
     }
 
     private void makeProgressBar() {
-        if(progressDialog == null) {
+        if (progressDialog == null) {
             progressDialog = new ProgressDialog(getContext());
         }
         progressDialog.setMessage("Đang cập nhật ...");
@@ -382,8 +431,10 @@ public class UpdateSanPhamFragment extends Fragment {
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
-                    // handle back button's click listener
-                    fragmentManager.popBackStack();
+                    // handle back button's click listenera
+                    activity.getSupportFragmentManager().beginTransaction()
+                            .replace(R.id.contentFrame, new DanhSachSanPhamFragment())
+                            .commit();
                     return true;
                 }
                 return false;
@@ -391,7 +442,6 @@ public class UpdateSanPhamFragment extends Fragment {
         });
 
     }
-
 
 
 }
