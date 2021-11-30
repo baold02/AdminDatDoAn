@@ -21,6 +21,7 @@ import com.nhomduan.quanlydathang_admin.interface_.IAfterGetAllObject;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterInsertObject;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterUpdateObject;
 import com.nhomduan.quanlydathang_admin.model.LoaiSP;
+import com.nhomduan.quanlydathang_admin.model.Product;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -141,7 +142,7 @@ public class ProductTypeDao {
     public void deleteProductType(Context context, LoaiSP loaiSP, IAfterDeleteObject iAfterDeleteObject) {
         new AlertDialog.Builder(context)
                 .setTitle("Xóa sản phẩm")
-                .setMessage("Bạn có chắc chắn muốn xóa?")
+                .setMessage("Bạn có chắc chắn muốn xóa?\n Bạn sẽ luôn cả sản phẩm thuộc loại!")
                 .setNegativeButton("Hủy", null)
                 .setPositiveButton("Xóa", (dialog, i) -> {
                     FirebaseDatabase.getInstance().getReference().child("loai_sp").child(loaiSP.getId())
@@ -152,8 +153,26 @@ public class ProductTypeDao {
                                     iAfterDeleteObject.onError(error);
                                 }
                             });
+                    ProductDao.getInstance().getAllProduct(new IAfterGetAllObject() {
+                        @Override
+                        public void iAfterGetAllObject(Object obj) {
+                            List<Product> productList = (List<Product>) obj;
+                            for(Product product : productList) {
+                                if(product.getLoai_sp().equals(loaiSP.getId())) {
+
+                                }
+                            }
+                        }
+
+                        @Override
+                        public void onError(DatabaseError error) {
+
+                        }
+                    });
                 })
                 .show();
 
     }
+
+
 }

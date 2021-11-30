@@ -35,11 +35,13 @@ import com.nhomduan.quanlydathang_admin.activities.ShowProductActivity;
 import com.nhomduan.quanlydathang_admin.adapter.SanPhamAdapter;
 import com.nhomduan.quanlydathang_admin.dao.OrderDao;
 import com.nhomduan.quanlydathang_admin.dao.ProductDao;
+import com.nhomduan.quanlydathang_admin.dao.ProductTypeDao;
 import com.nhomduan.quanlydathang_admin.dao.UserDao;
 import com.nhomduan.quanlydathang_admin.dialog.SingleChoiceDialog;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterDeleteObject;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterGetAllObject;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterUpdateObject;
+import com.nhomduan.quanlydathang_admin.interface_.IDone;
 import com.nhomduan.quanlydathang_admin.interface_.IOnChangeFragment;
 import com.nhomduan.quanlydathang_admin.interface_.OnClickItem;
 import com.nhomduan.quanlydathang_admin.interface_.OnStopProduct;
@@ -177,14 +179,35 @@ public class DanhSachSanPhamByLoaiSPFragment extends Fragment implements OnClick
                             }
                         });
                         xoaDonHang(product);
+                        xoaSoLuongSanPhamCuaLoai(product);
                     })
                     .show();
 
         }
     }
 
-    private interface IDone {
-        void onDone(boolean done);
+    private void xoaSoLuongSanPhamCuaLoai(Product product) {
+        String loaiSPId = product.getLoai_sp();
+        ProductTypeDao.getInstance().getAllProductType(new IAfterGetAllObject() {
+            @Override
+            public void iAfterGetAllObject(Object obj) {
+                List<LoaiSP> loaiSPList = (List<LoaiSP>) obj;
+                for(int i = 0; i < loaiSPList.size(); i++) {
+                    if(loaiSPList.get(i).getId().equals(loaiSPId)) {
+                        LoaiSP loaiSP = loaiSPList.get(i);
+                        loaiSP.setSoSanPhamThuocLoai(loaiSP.getSoSanPhamThuocLoai() - 1);
+                        ProductTypeDao.getInstance().updateProductType(loaiSPList.get(i), loaiSP.toMapSoLuongSanPham());
+                        break;
+                    }
+                }
+
+            }
+
+            @Override
+            public void onError(DatabaseError error) {
+
+            }
+        });
     }
 
 
@@ -319,20 +342,11 @@ public class DanhSachSanPhamByLoaiSPFragment extends Fragment implements OnClick
                             if (viTri != -1) {
                                 sanPhamYeuThichList.remove(viTri);
                                 user.setMa_sp_da_thich(sanPhamYeuThichList);
-                                UserDao.getInstance().updateUser(user, user.toMapSPDaThich(), new IAfterUpdateObject() {
-                                    @Override
-                                    public void onSuccess(Object obj) {
-                                        if (couterSPDT == userList.size()) {
-                                            couterSPDT = 0;
-                                            iDone.onDone(true);
-                                        }
-                                    }
-
-                                    @Override
-                                    public void onError(DatabaseError error) {
-                                        iDone.onDone(false);
-                                    }
-                                });
+                                UserDao.getInstance().updateUser(user, user.toMapSPDaThich());
+                            }
+                            if (couterSPDT == userList.size()) {
+                                couterSPDT = 0;
+                                iDone.onDone(true);
                             }
                         }
 
