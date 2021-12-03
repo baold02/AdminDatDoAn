@@ -30,7 +30,6 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     private Toast toast;
 
 
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -54,7 +53,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        if (id == R.id.menu_tool){
+        if (id == R.id.menu_tool) {
             mDrawerLayout.openDrawer(GravityCompat.END);
         }
 
@@ -88,22 +87,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
         return true;
     }
 
-    public void replaceFragment(Fragment fragment)
-    {
+    public void replaceFragment(Fragment fragment) {
         FragmentTransaction fragmentTransaction = getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.contentFrame, fragment)
+        fragmentTransaction.replace(R.id.contentFrame, fragment, fragment.getClass().getSimpleName())
                 .commit();
     }
 
     @Override
     public void onBackPressed() {
-        if (mDrawerLayout.isDrawerOpen(GravityCompat.END))
-        {
+        if (mDrawerLayout.isDrawerOpen(GravityCompat.END)) {
             mDrawerLayout.closeDrawer(GravityCompat.END);
         }
-        else
-        {
-            if(backpressedTime + 2000 > System.currentTimeMillis()) {
+        else {
+            if (backpressedTime + 2000 > System.currentTimeMillis()) {
                 toast.cancel();
                 super.onBackPressed();
             } else {

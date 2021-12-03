@@ -26,7 +26,7 @@ public class ThongKeDao {
         return instance;
     }
 
-    public void getDonHangByTime(double thoiGianBD, double thoiGianKT, IAfterQuery iAfterQuery) {
+    public void getDonHangByTime(long thoiGianBD, long thoiGianKT, IAfterQuery iAfterQuery) {
         Query query = FirebaseDatabase.getInstance().getReference().child("don_hang")
                 .orderByChild("thoiGianGiaoHang").startAt(thoiGianBD).endAt(thoiGianKT);
         query.addValueEventListener(new ValueEventListener() {

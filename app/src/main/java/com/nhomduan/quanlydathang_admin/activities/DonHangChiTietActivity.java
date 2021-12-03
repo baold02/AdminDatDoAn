@@ -92,7 +92,7 @@ public class DonHangChiTietActivity extends AppCompatActivity {
                     }
                 }
                 if(trangThai.equals(TrangThai.HT)) {
-                    donHang.setThoiGianGiaoHang(String.valueOf(System.currentTimeMillis()));
+                    donHang.setThoiGianGiaoHang(System.currentTimeMillis());
                     List<DonHangChiTiet> donHangChiTietList = donHang.getDon_hang_chi_tiets();
                     for(DonHangChiTiet dhct : donHangChiTietList) {
                         ProductDao.getInstance().getProductById(dhct.getProduct().getId(), new IAfterGetAllObject() {
@@ -151,8 +151,7 @@ public class DonHangChiTietActivity extends AppCompatActivity {
         if(donHang.getTrang_thai().equals(TrangThai.HT.getTrangThai())) {
             tvTGGiaoHang.setVisibility(View.VISIBLE);
             tvTitleTGGiaoHang.setVisibility(View.VISIBLE);
-            long time = Long.parseLong(donHang.getThoiGianGiaoHang());
-            tvTGGiaoHang.setText(OverUtils.simpleDateFormat.format(new Date(time)));
+            tvTGGiaoHang.setText(OverUtils.simpleDateFormat.format(new Date(donHang.getThoiGianGiaoHang())));
         }
 
         setUpTrangThai();

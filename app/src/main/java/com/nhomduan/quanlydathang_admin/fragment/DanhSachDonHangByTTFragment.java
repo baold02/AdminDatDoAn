@@ -30,15 +30,11 @@ import java.util.List;
 
 
 public class DanhSachDonHangByTTFragment extends Fragment implements OnClickItem {
-    private final TrangThai trangThai;
+    private TrangThai trangThai;
 
     private RecyclerView rcvDanhSachDonHang;
     private List<DonHang> donHangList;
     private DonHangAdapter donHangAdapter;
-
-    public DanhSachDonHangByTTFragment(TrangThai trangThai) {
-        this.trangThai = trangThai;
-    }
 
 
     @Override
@@ -52,7 +48,15 @@ public class DanhSachDonHangByTTFragment extends Fragment implements OnClickItem
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initView(view);
+        getData();
         setUpListDonHang();
+    }
+
+    private void getData() {
+        Bundle bundle = getArguments();
+        if(bundle != null) {
+            trangThai = (TrangThai) bundle.getSerializable("trang_thai");
+        }
     }
 
     private void initView(View view) {
