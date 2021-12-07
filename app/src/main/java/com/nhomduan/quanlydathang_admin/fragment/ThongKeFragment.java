@@ -119,7 +119,6 @@ public class ThongKeFragment extends Fragment {
         if(savedInstanceState != null) {
             tvNgayBD.setText(savedInstanceState.getString("ngayBD"));
             tvNgayKT.setText(savedInstanceState.getString("ngayKT"));
-            btnThongKe.performClick();
         }
     }
 
@@ -135,6 +134,11 @@ public class ThongKeFragment extends Fragment {
                 } else {
                     if (timeBD == timeKT) {
                         timeKT = timeKT + (24 * 60 * 60 * 1000) - 1000;
+                    }
+                    if(timeKT < timeBD) {
+                        long temp = timeBD;
+                        timeBD = timeKT;
+                        timeKT = temp;
                     }
                     ThongKeDao.getInstance().getDonHangByTime(timeBD, timeKT, new IAfterQuery() {
                         @Override

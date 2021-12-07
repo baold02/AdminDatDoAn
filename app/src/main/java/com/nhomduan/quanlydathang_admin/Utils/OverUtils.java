@@ -13,7 +13,8 @@ import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 public class OverUtils {
-
+//    public static NumberFormat currencyFormat = NumberFormat.getCurrencyInstance(locale);
+//    public static NumberFormat numberFormat = NumberFormat.getNumberInstance(locale);
     public static final String HOAT_DONG = "HOAT_DONG";
     public static final String DUNG_KINH_DOANH = "DUNG_KINH_DOANH";
     public static final String HET_HANG = "HET_HANG";

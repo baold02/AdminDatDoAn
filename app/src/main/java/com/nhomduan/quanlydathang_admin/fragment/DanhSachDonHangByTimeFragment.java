@@ -44,7 +44,14 @@ public class DanhSachDonHangByTimeFragment extends Fragment implements OnClickIt
         super.onViewCreated(view, savedInstanceState);
         initView(view);
         getDuLieu();
+        setUpToolbar();
         setUpDonHangList();
+    }
+
+    private void setUpToolbar() {
+        toolbar.setNavigationOnClickListener(v -> {
+            requireActivity().getSupportFragmentManager().popBackStack();
+        });
     }
 
     private void getDuLieu() {
@@ -92,9 +99,7 @@ public class DanhSachDonHangByTimeFragment extends Fragment implements OnClickIt
             @Override
             public boolean onKey(View v, int keyCode, KeyEvent event) {
                 if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
-                    requireActivity().getSupportFragmentManager().beginTransaction()
-                            .replace(R.id.contentFrame, new ThongKeFragment())
-                            .commit();
+                    requireActivity().getSupportFragmentManager().popBackStack();
                     return true;
                 }
                 return false;

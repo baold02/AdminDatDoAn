@@ -137,7 +137,9 @@ public class User implements Serializable {
 
 
     public Map<String, Object> toMapLock() {
-        return null;
+        HashMap<String, Object> map = new HashMap<String, Object>();
+        map.put("enable",enable);
+        return map;
     }
 }
 

@@ -3,6 +3,7 @@ package com.nhomduan.quanlydathang_admin.fragment;
 import static com.nhomduan.quanlydathang_admin.Utils.OverUtils.ERROR_MESSAGE;
 
 import android.os.Bundle;
+import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -90,7 +91,15 @@ public class DanhSachUserFragment extends Fragment implements OnClickItem, OnLoc
 
     @Override
     public void onClickItem(Object obj) {
-
+        User user = (User) obj;
+        Fragment fragment = new DetailUserFragment();
+        Bundle bundle = new Bundle();
+        bundle.putString("userName", user.getUsername());
+        fragment.setArguments(bundle);
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction().replace(R.id.contentFrame, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     @Override
@@ -117,4 +126,6 @@ public class DanhSachUserFragment extends Fragment implements OnClickItem, OnLoc
             }
         });
     }
+
+
 }

@@ -17,8 +17,8 @@ import com.nhomduan.quanlydathang_admin.R;
 import com.nhomduan.quanlydathang_admin.fragment.DanhSachDonHangFragment;
 import com.nhomduan.quanlydathang_admin.fragment.DanhSachLoaiSanPhamFragment;
 import com.nhomduan.quanlydathang_admin.fragment.DanhSachSanPhamFragment;
+import com.nhomduan.quanlydathang_admin.fragment.DanhSachUserFragment;
 import com.nhomduan.quanlydathang_admin.fragment.ShipperFragment;
-import com.nhomduan.quanlydathang_admin.fragment.UserFragment;
 import com.nhomduan.quanlydathang_admin.fragment.ThongKeFragment;
 
 public class MainActivity extends AppCompatActivity implements NavigationView.OnNavigationItemSelectedListener {
@@ -73,7 +73,7 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
                 replaceFragment(new DanhSachLoaiSanPhamFragment());
                 break;
             case R.id.nav_quanLyUser:
-                replaceFragment(new UserFragment());
+                replaceFragment(new DanhSachUserFragment());
                 break;
             case R.id.nav_thongKe:
                 replaceFragment(new ThongKeFragment());

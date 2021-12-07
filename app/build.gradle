@@ -47,4 +47,7 @@ dependencies {
 
     // load anh từ url
     implementation 'com.squareup.picasso:picasso:2.71828'
+
+    // ảnh tròn
+    implementation 'de.hdodenhof:circleimageview:3.1.0'
 }

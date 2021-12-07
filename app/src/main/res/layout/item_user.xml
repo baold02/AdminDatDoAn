@@ -27,12 +27,13 @@
         android:id="@+id/item_user"
         android:layout_width="match_parent"
         android:layout_height="wrap_content">
-        <ImageView
+        <de.hdodenhof.circleimageview.CircleImageView
             android:id="@+id/imgUser"
             android:layout_width="100dp"
-            android:layout_gravity="center"
             android:layout_height="100dp"
-            android:src="@drawable/ic_image" />
+            android:layout_gravity="center"
+            app:civ_border_color="@color/orange"
+            app:civ_border_width="2dp" />
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -59,12 +60,12 @@
                 android:layout_width="match_parent"
                 android:layout_height="40dp"/>
             <TextView
-                android:textSize="14sp"
+                android:textSize="12sp"
                 android:textColor="@color/black"
-                android:text="Số sản phẩm : 100"
+                android:text="Địa chỉ : hà nội"
                 android:gravity="center|left"
                 android:paddingLeft="12dp"
-                android:id="@+id/soSanPhamDaMua"
+                android:id="@+id/tvDiaChi"
                 android:layout_width="match_parent"
                 android:layout_height="40dp"/>
         </LinearLayout>

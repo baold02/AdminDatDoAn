@@ -1,5 +1,6 @@
 package com.nhomduan.quanlydathang_admin.fragment;
 
+import android.content.Intent;
 import android.os.Bundle;
 
 import androidx.annotation.NonNull;
@@ -16,6 +17,7 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.nhomduan.quanlydathang_admin.R;
+import com.nhomduan.quanlydathang_admin.activities.DonHangChiTietActivity;
 import com.nhomduan.quanlydathang_admin.adapter.DoanhThuAdapter;
 import com.nhomduan.quanlydathang_admin.interface_.OnClickItem;
 import com.nhomduan.quanlydathang_admin.model.DonHang;
@@ -73,7 +75,6 @@ public class DanhSachDoanhThuDonHangFragment extends Fragment implements OnClick
     @Override
     public void onResume() {
         super.onResume();
-
         getView().setFocusableInTouchMode(true);
         getView().requestFocus();
         getView().setOnKeyListener(new View.OnKeyListener() {
@@ -91,7 +92,10 @@ public class DanhSachDoanhThuDonHangFragment extends Fragment implements OnClick
 
     @Override
     public void onClickItem(Object obj) {
-
+        DonHang donHang = (DonHang) obj;
+        Intent intent = new Intent(getContext(), DonHangChiTietActivity.class);
+        intent.putExtra("don_hang", donHang);
+        startActivity(intent);
     }
 
     @Override

@@ -62,7 +62,12 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         }
         holder.tvUserName.setText("UserName : " + user.getUsername());
         holder.tvSoDienThoai.setText("SĐT : " + user.getPhone_number());
-        holder.soSanPhamDaMua.setText("Số sản phẩm đã mua : 12");
+        if(user.getAddress() != null && user.getAddress().length() > 0) {
+            holder.tvDiaChi.setText("Địa chỉ: " + user.getAddress());
+        } else {
+            holder.tvDiaChi.setText("Chưa thêm địa chỉ");
+        }
+
 
         String imgUser = user.getHinhanh();
         if(imgUser != null) {
@@ -107,7 +112,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
         private ImageView imgUser;
         private TextView tvUserName;
         private TextView tvSoDienThoai;
-        private TextView soSanPhamDaMua;
+        private TextView tvDiaChi;
 
         public UserViewHolder(@NonNull View itemView) {
             super(itemView);
@@ -117,7 +122,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             imgUser = itemView.findViewById(R.id.imgUser);
             tvUserName = itemView.findViewById(R.id.tvUserName);
             tvSoDienThoai = itemView.findViewById(R.id.tvSoDienThoai);
-            soSanPhamDaMua = itemView.findViewById(R.id.soSanPhamDaMua);
+            tvDiaChi = itemView.findViewById(R.id.tvDiaChi);
         }
     }
 }
