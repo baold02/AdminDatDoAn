@@ -14,10 +14,13 @@ import android.widget.Toast;
 
 import com.google.android.material.navigation.NavigationView;
 import com.nhomduan.quanlydathang_admin.R;
+import com.nhomduan.quanlydathang_admin.fragment.AccountFragment;
 import com.nhomduan.quanlydathang_admin.fragment.DanhSachDonHangFragment;
 import com.nhomduan.quanlydathang_admin.fragment.DanhSachLoaiSanPhamFragment;
 import com.nhomduan.quanlydathang_admin.fragment.DanhSachSanPhamFragment;
 import com.nhomduan.quanlydathang_admin.fragment.DanhSachUserFragment;
+import com.nhomduan.quanlydathang_admin.fragment.DashBroadFragment;
+import com.nhomduan.quanlydathang_admin.fragment.EditAccountFragment;
 import com.nhomduan.quanlydathang_admin.fragment.ShipperFragment;
 import com.nhomduan.quanlydathang_admin.fragment.ThongKeFragment;
 
@@ -81,6 +84,12 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             case R.id.nav_quanLyShipper:
                 replaceFragment(new ShipperFragment());
                 break;
+            case R.id.nav_TaiKhoan:
+                replaceFragment(new AccountFragment());
+                break;
+            case R.id.nav_DieuKhien:
+                replaceFragment(new DashBroadFragment());
+                break;
         }
         mDrawerLayout.closeDrawer(GravityCompat.END);
 
@@ -99,14 +108,19 @@ public class MainActivity extends AppCompatActivity implements NavigationView.On
             mDrawerLayout.closeDrawer(GravityCompat.END);
         }
         else {
-            if (backpressedTime + 2000 > System.currentTimeMillis()) {
-                toast.cancel();
-                super.onBackPressed();
+            if(getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                getSupportFragmentManager().popBackStack();
             } else {
-                toast = Toast.makeText(MainActivity.this, "Nhấn trở về hai lần để thoát ứng dụng", Toast.LENGTH_LONG);
-                toast.show();
+                if (backpressedTime + 2000 > System.currentTimeMillis()) {
+                    toast.cancel();
+                    super.onBackPressed();
+                } else {
+                    toast = Toast.makeText(MainActivity.this, "Nhấn trở về hai lần để thoát ứng dụng", Toast.LENGTH_LONG);
+                    toast.show();
+                }
+                backpressedTime = System.currentTimeMillis();
             }
-            backpressedTime = System.currentTimeMillis();
+
         }
     }
 

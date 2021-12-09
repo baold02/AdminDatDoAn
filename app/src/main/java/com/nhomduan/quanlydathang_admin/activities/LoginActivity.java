@@ -1,6 +1,9 @@
 package com.nhomduan.quanlydathang_admin.activities;
 
 import static com.google.firebase.database.core.RepoManager.clear;
+import static com.nhomduan.quanlydathang_admin.Utils.OverUtils.ERROR_MESSAGE;
+
+import static java.security.AccessController.getContext;
 
 import android.content.Context;
 import android.content.Intent;
@@ -17,7 +20,13 @@ import androidx.appcompat.widget.AppCompatCheckBox;
 
 import com.google.android.material.textfield.TextInputEditText;
 import com.google.android.material.textfield.TextInputLayout;
+import com.google.firebase.database.DatabaseError;
 import com.nhomduan.quanlydathang_admin.R;
+import com.nhomduan.quanlydathang_admin.Utils.OverUtils;
+import com.nhomduan.quanlydathang_admin.dao.AdminDao;
+import com.nhomduan.quanlydathang_admin.interface_.IAfterGetAllObject;
+import com.nhomduan.quanlydathang_admin.interface_.IDone;
+import com.nhomduan.quanlydathang_admin.model.Admin;
 
 public class LoginActivity extends AppCompatActivity {
 
@@ -29,6 +38,8 @@ public class LoginActivity extends AppCompatActivity {
     private AppCompatCheckBox chkLuuMatKhau;
     private AppCompatButton btnDangNhap;
     private AppCompatButton btnHuyDangNhap;
+
+    public static String loginedUserName;
 
 
 
@@ -62,19 +73,52 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_LONG).show();
                     return;
                 }
-                if(tenDangNhap.equals("Admin") && matKhau.equals("Admin99*")) {
-                    remember(tenDangNhap, matKhau, remember);
-                    Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                    startActivity(intent);
-                    finish();
-                } else {
-                    Toast.makeText(getApplicationContext(), "Tên đăng nhập hoặc mật khẩu không chính xác !", Toast.LENGTH_LONG).show();
-                }
+                verifyAccount(tenDangNhap, matKhau, new IDone() {
+                    @Override
+                    public void onDone(boolean done) {
+                        if(done) {
+                            remember(tenDangNhap, matKhau, remember);
+                            loginedUserName = tenDangNhap;
+                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                            startActivity(intent);
+                            finish();
+                        } else {
+                            Toast.makeText(getApplicationContext(), "Tên đăng nhập hoặc mật khẩu không chính xác !", Toast.LENGTH_LONG).show();
+                        }
+                    }
+                });
+
             }
         });
 
 
 
+    }
+
+    private void verifyAccount(String tenDangNhap, String matKhau, IDone iDone) {
+        AdminDao.getInstance().getAdminByUserName(tenDangNhap, new IAfterGetAllObject() {
+            @Override
+            public void iAfterGetAllObject(Object obj) {
+                Admin admin = (Admin) obj;
+                if(admin.getUserName() == null) {
+                    OverUtils.makeToast(LoginActivity.this, "Tài khoản không tồn tại");
+                    iDone.onDone(false);
+                } else {
+                    if(!matKhau.equals(admin.getPassword())) {
+                        OverUtils.makeToast(LoginActivity.this, "Mật khẩu không đúng");
+                        iDone.onDone(false);
+                    } else {
+                        iDone.onDone(true);
+                    }
+                }
+            }
+
+            @Override
+            public void onError(DatabaseError error) {
+                OverUtils.makeToast(LoginActivity.this, ERROR_MESSAGE);
+                iDone.onDone(false);
+            }
+        });
     }
 
     private void clearForm() {

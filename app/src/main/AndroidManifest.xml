@@ -5,6 +5,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
+        android:screenOrientation="portrait"
         android:allowBackup="true"
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
@@ -14,11 +15,14 @@
         <activity
             android:name=".activities.DonHangChiTietActivity"
             android:exported="false" />
-        <activity android:name=".activities.MainActivity" />
+        <activity android:name=".activities.MainActivity"
+            />
         <activity android:name=".activities.ShowProductActivity"
+
             android:exported="false" />
         <activity
             android:name=".activities.FlashActivity"
+
             android:exported="true">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -26,7 +30,8 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity android:name=".activities.LoginActivity" />
+        <activity android:name=".activities.LoginActivity"
+            />
     </application>
 
 </manifest>

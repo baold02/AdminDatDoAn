@@ -40,5 +40,20 @@
 
     </item>
 
+    <item android:title="KHÁC">
+        <menu android:checkableBehavior="single">
+            <item
+                android:id="@+id/nav_TaiKhoan"
+                android:icon="@drawable/ic_chart"
+                android:title="Tài khoản" />
+            <item
+                android:id="@+id/nav_DieuKhien"
+                android:icon="@drawable/ic_chart"
+                android:title="Điều khiển" />
+
+        </menu>
+
+    </item>
+
 
 </menu>

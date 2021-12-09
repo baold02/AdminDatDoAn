@@ -6,6 +6,7 @@ import android.app.DatePickerDialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Pair;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -17,6 +18,8 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
+import androidx.lifecycle.Observer;
+import androidx.lifecycle.ViewModelProvider;
 
 import com.google.firebase.database.DatabaseError;
 import com.nhomduan.quanlydathang_admin.R;
@@ -24,8 +27,10 @@ import com.nhomduan.quanlydathang_admin.Utils.OverUtils;
 import com.nhomduan.quanlydathang_admin.activities.MainActivity;
 import com.nhomduan.quanlydathang_admin.dao.ThongKeDao;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterQuery;
+import com.nhomduan.quanlydathang_admin.model.BangThongKe;
 import com.nhomduan.quanlydathang_admin.model.DonHang;
 import com.nhomduan.quanlydathang_admin.model.DonHangChiTiet;
+import com.nhomduan.quanlydathang_admin.viewmodel.ShareViewModel;
 
 import java.io.Serializable;
 import java.text.ParseException;
@@ -53,7 +58,9 @@ public class ThongKeFragment extends Fragment {
 
     private SimpleDateFormat simpleDateFormat = new SimpleDateFormat("dd/MM/yyyy");
 
-    private MainActivity activity;
+    private MainActivity activity;// cái activity này là tốn bộ nhớ làm này :v ko ai nhét cả instance activity
+    //vào fragment hết :v
+    private ShareViewModel shareViewModel;
 
     @Override
     public void onAttach(@NonNull Context context) {
@@ -66,17 +73,12 @@ public class ThongKeFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         return inflater.inflate(R.layout.fragment_thongke, container, false);
     }
-
-    @Override
-    public void onViewStateRestored(@Nullable Bundle savedInstanceState) {
-        super.onViewStateRestored(savedInstanceState);
-        getSaveInstanceState(savedInstanceState);
-    }
-
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initView(view);
+        shareViewModel = new ViewModelProvider(requireActivity()).get(ShareViewModel.class);
+        obServerData();
         activity = (MainActivity) requireActivity();
         activity.setSupportActionBar(toolbar);
         setUpBtnChonNgayBD();
@@ -114,12 +116,17 @@ public class ThongKeFragment extends Fragment {
 
     }
 
-
-    private void getSaveInstanceState(Bundle savedInstanceState) {
-        if(savedInstanceState != null) {
-            tvNgayBD.setText(savedInstanceState.getString("ngayBD"));
-            tvNgayKT.setText(savedInstanceState.getString("ngayKT"));
-        }
+    private void obServerData() {
+        shareViewModel.data.observe(getViewLifecycleOwner(), new Observer<BangThongKe>() {
+            @Override
+            public void onChanged(BangThongKe bangThongKe) {
+                tvNgayBD.setText(bangThongKe.getNgayBD());
+                tvNgayKT.setText(bangThongKe.getNgayKT());
+                donHangList = bangThongKe.getDonHangList();
+                tvSoDonHang.setText("Số đơn hàng: " + donHangList.size());
+                tvSoDoanhThu.setText("Doanh thu: " + getSoDoanhThu(donHangList));
+            }
+        });
     }
 
     private void setUpBtnThongKe() {
@@ -146,6 +153,7 @@ public class ThongKeFragment extends Fragment {
                             donHangList = (List<DonHang>) obj;
                             tvSoDonHang.setText("Số đơn hàng: " + donHangList.size());
                             tvSoDoanhThu.setText("Doanh thu: " + getSoDoanhThu(donHangList));
+                            shareViewModel.setData(new BangThongKe(ngayBD, ngayKT, donHangList));
                         }
 
                         @Override
@@ -200,8 +208,15 @@ public class ThongKeFragment extends Fragment {
 
     private void setUpBtnChonNgayBD() {
         btnChonNgayBD.setOnClickListener(v -> {
+            clearForm();
             createDialog(tvNgayBD);
         });
+    }
+
+    private void clearForm() {
+        donHangList = null;
+        tvSoDonHang.setText("Số đơn hàng");
+        tvSoDoanhThu.setText("Doanh Thu");
     }
 
     private void createDialog(TextView tvHienThi) {
@@ -237,12 +252,5 @@ public class ThongKeFragment extends Fragment {
         tvSoDoanhThu = view.findViewById(R.id.tvSoDoanhThu);
         tvChiTietDoanhThu = view.findViewById(R.id.tvChiTietDoanhThu);
         btnThongKe = view.findViewById(R.id.btnThongKe);
-    }
-
-    @Override
-    public void onSaveInstanceState(@NonNull Bundle outState) {
-        super.onSaveInstanceState(outState);
-        outState.putString("ngayBD", tvNgayBD.getText().toString().trim());
-        outState.putString("ngayKT", tvNgayKT.getText().toString().trim());
     }
 }
