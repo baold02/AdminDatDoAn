@@ -17,7 +17,6 @@ import android.view.View;
 import android.view.ViewGroup;
 
 import com.nhomduan.quanlydathang_admin.R;
-import com.nhomduan.quanlydathang_admin.activities.DonHangChiTietActivity;
 import com.nhomduan.quanlydathang_admin.adapter.DonHangAdapter;
 import com.nhomduan.quanlydathang_admin.interface_.OnClickItem;
 import com.nhomduan.quanlydathang_admin.model.DonHang;
@@ -73,10 +72,15 @@ public class DanhSachDonHangByTimeFragment extends Fragment implements OnClickIt
 
     @Override
     public void onClickItem(Object obj) {
-        DonHang donHang = (DonHang) obj;
-        Intent intent = new Intent(getContext(), DonHangChiTietActivity.class);
-        intent.putExtra("don_hang", donHang);
-        startActivity(intent);
+        Fragment fragment = new ChiTietDonHangFragment();
+        Bundle args = new Bundle();
+        args.putString("ma_don_hang", String.valueOf(obj));
+        fragment.setArguments(args);
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contentFrame, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     @Override

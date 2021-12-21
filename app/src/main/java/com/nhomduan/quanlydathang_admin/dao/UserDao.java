@@ -4,6 +4,8 @@ import android.util.Log;
 
 import androidx.annotation.NonNull;
 
+import com.google.android.gms.tasks.OnCompleteListener;
+import com.google.android.gms.tasks.Task;
 import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.FirebaseDatabase;
@@ -70,6 +72,28 @@ public class UserDao {
                 .addOnFailureListener(e -> Log.e("TAG", "onFailure: "));
     }
 
+    public void getAllUser2(IAfterGetAllObject iAfterGetAllObject) {
+        FirebaseDatabase.getInstance().getReference().child("user").get()
+                .addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+                    @Override
+                    public void onComplete(@NonNull Task<DataSnapshot> task) {
+                        if(task.isSuccessful()) {
+                            DataSnapshot dataSnapshot = task.getResult();
+                            if(dataSnapshot != null) {
+                                List<User> userList = new ArrayList<>();
+                                for (DataSnapshot data : dataSnapshot.getChildren()) {
+                                    if (data != null) {
+                                        User user = data.getValue(User.class);
+                                        userList.add(user);
+                                    }
+                                }
+                                iAfterGetAllObject.iAfterGetAllObject(userList);
+                            }
+                        }
+                    }
+                });
+    }
+
     public void insertUser(User user, IAfterInsertObject iAfterInsertObject) {
         FirebaseDatabase.getInstance().getReference().child("user").child(user.getUsername())
                 .setValue(user, (error, ref) -> {
@@ -133,17 +157,17 @@ public class UserDao {
     public void getGioHangOfUser(User user, IAfterGetAllObject iAfterGetAllObject) {
         FirebaseDatabase.getInstance().getReference().child("user").child(user.getUsername())
                 .child("gio_hang").get().addOnCompleteListener(task -> {
-                    if(task.isSuccessful()) {
-                        DataSnapshot dataSnapshot = task.getResult();
-                        List<GioHang> gioHangList = new ArrayList<>();
-                        if (dataSnapshot != null) {
-                            for (DataSnapshot data : dataSnapshot.getChildren()) {
-                                GioHang gioHang = data.getValue(GioHang.class);
-                                gioHangList.add(gioHang);
-                            }
-                        }
-                        iAfterGetAllObject.iAfterGetAllObject(gioHangList);
+            if (task.isSuccessful()) {
+                DataSnapshot dataSnapshot = task.getResult();
+                List<GioHang> gioHangList = new ArrayList<>();
+                if (dataSnapshot != null) {
+                    for (DataSnapshot data : dataSnapshot.getChildren()) {
+                        GioHang gioHang = data.getValue(GioHang.class);
+                        gioHangList.add(gioHang);
                     }
+                }
+                iAfterGetAllObject.iAfterGetAllObject(gioHangList);
+            }
 
         });
 
@@ -153,20 +177,17 @@ public class UserDao {
     public void getSanPhamYeuThichOfUser(User user, IAfterGetAllObject iAfterGetAllObject) {
         FirebaseDatabase.getInstance().getReference()
                 .child("user").child(user.getUsername()).child("ma_sp_da_thich")
-                .addValueEventListener(new ValueEventListener() {
-                    @Override
-                    public void onDataChange(@NonNull DataSnapshot snapshot) {
-                        List<String> sanPhamYeuThichList = new ArrayList<>();
-                        for (DataSnapshot data : snapshot.getChildren()) {
-                            String maSP = data.getValue(String.class);
-                            sanPhamYeuThichList.add(maSP);
+                .get().addOnCompleteListener(task -> {
+                    if (task.isSuccessful()) {
+                        DataSnapshot snapshot = task.getResult();
+                        if(snapshot != null) {
+                            List<String> sanPhamYeuThichList = new ArrayList<>();
+                            for (DataSnapshot data : snapshot.getChildren()) {
+                                String maSP = data.getValue(String.class);
+                                sanPhamYeuThichList.add(maSP);
+                            }
+                            iAfterGetAllObject.iAfterGetAllObject(sanPhamYeuThichList);
                         }
-                        iAfterGetAllObject.iAfterGetAllObject(sanPhamYeuThichList);
-                    }
-
-                    @Override
-                    public void onCancelled(@NonNull DatabaseError error) {
-                        iAfterGetAllObject.onError(error);
                     }
                 });
     }

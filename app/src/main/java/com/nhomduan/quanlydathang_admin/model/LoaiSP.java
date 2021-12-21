@@ -1,9 +1,10 @@
 package com.nhomduan.quanlydathang_admin.model;
 
+import java.io.Serializable;
 import java.util.HashMap;
 import java.util.Map;
 
-public class LoaiSP {
+public class LoaiSP implements Serializable {
 
     private String id;
     private String name;

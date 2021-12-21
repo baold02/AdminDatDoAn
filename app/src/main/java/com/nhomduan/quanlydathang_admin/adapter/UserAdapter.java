@@ -1,5 +1,6 @@
 package com.nhomduan.quanlydathang_admin.adapter;
 
+import android.annotation.SuppressLint;
 import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -48,7 +49,7 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
     }
 
     @Override
-    public void onBindViewHolder(@NonNull UserAdapter.UserViewHolder holder, int position) {
+    public void onBindViewHolder(@NonNull UserAdapter.UserViewHolder holder, @SuppressLint("RecyclerView") int position) {
         User user = userList.get(position);
         if(user == null) {
             return;
@@ -89,8 +90,12 @@ public class UserAdapter extends RecyclerView.Adapter<UserAdapter.UserViewHolder
             public void onClick(View view) {
                 if(user.isEnable()) {
                     user.setEnable(false);
+                    userList.set(position,user);
+                    notifyDataSetChanged();
                 } else {
                    user.setEnable(true);
+                    userList.set(position,user);
+                    notifyDataSetChanged();
                 }
                 onLockUser.onLock(user);
             }

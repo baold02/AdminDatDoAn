@@ -55,17 +55,11 @@ public class DonHangAdapter extends RecyclerView.Adapter<DonHangAdapter.DonHangV
         holder.tvTongTien.setText("Tổng tiền : " + OverUtils.currencyFormat.format(donHang.getTong_tien()));
 
         StringBuilder stringBuilder = new StringBuilder("Sản Phẩm : ");
-        Log.e("fdsf", donHangList.get(position).getId()  + "");
         for(DonHangChiTiet donHangChiTiet : donHang.getDon_hang_chi_tiets()) {
             stringBuilder.append( "\n" + donHangChiTiet.getProduct().getName() + " (" + donHangChiTiet.getSo_luong() + ")");
         }
         holder.tvSanPhams.setText(stringBuilder.toString());
-        holder.item.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                onClickItem.onClickItem(donHang);
-            }
-        });
+        holder.item.setOnClickListener(view -> onClickItem.onClickItem(donHang.getId()));
     }
 
     @Override

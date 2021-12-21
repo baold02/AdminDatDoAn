@@ -3,7 +3,7 @@ package com.nhomduan.quanlydathang_admin.model;
 import java.io.Serializable;
 
 public class GioHang implements Serializable {
-    private String ma_sp;
+    private String ma_sp; // mã sp
     private int so_luong;
 
     public GioHang(String ma_sp, int so_luong) {

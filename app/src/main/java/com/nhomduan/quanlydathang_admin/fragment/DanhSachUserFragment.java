@@ -70,7 +70,7 @@ public class DanhSachUserFragment extends Fragment implements OnClickItem, OnLoc
     }
 
     private void getUserList() {
-        UserDao.getInstance().getAllUserListener(new IAfterGetAllObject() {
+        UserDao.getInstance().getAllUser(new IAfterGetAllObject() {
             @Override
             public void iAfterGetAllObject(Object obj) {
                 userList = (List<User>) obj;
@@ -114,6 +114,7 @@ public class DanhSachUserFragment extends Fragment implements OnClickItem, OnLoc
 
     @Override
     public void onLock(User user) {
+
         UserDao.getInstance().updateUser(user, user.toMap(), new IAfterUpdateObject() {
             @Override
             public void onSuccess(Object obj) {

@@ -117,15 +117,12 @@ public class ThongKeFragment extends Fragment {
     }
 
     private void obServerData() {
-        shareViewModel.data.observe(getViewLifecycleOwner(), new Observer<BangThongKe>() {
-            @Override
-            public void onChanged(BangThongKe bangThongKe) {
-                tvNgayBD.setText(bangThongKe.getNgayBD());
-                tvNgayKT.setText(bangThongKe.getNgayKT());
-                donHangList = bangThongKe.getDonHangList();
-                tvSoDonHang.setText("Số đơn hàng: " + donHangList.size());
-                tvSoDoanhThu.setText("Doanh thu: " + getSoDoanhThu(donHangList));
-            }
+        shareViewModel.data.observe(getViewLifecycleOwner(), bangThongKe -> {
+            tvNgayBD.setText(bangThongKe.getNgayBD());
+            tvNgayKT.setText(bangThongKe.getNgayKT());
+            donHangList = bangThongKe.getDonHangList();
+            tvSoDonHang.setText("Số đơn hàng: " + donHangList.size());
+            tvSoDoanhThu.setText("Doanh thu: " + getSoDoanhThu(donHangList));
         });
     }
 

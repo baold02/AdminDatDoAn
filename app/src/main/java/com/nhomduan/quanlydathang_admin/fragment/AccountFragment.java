@@ -23,6 +23,7 @@ import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.FirebaseDatabase;
 import com.nhomduan.quanlydathang_admin.R;
 import com.nhomduan.quanlydathang_admin.activities.LoginActivity;
+import com.nhomduan.quanlydathang_admin.activities.MainActivity;
 import com.nhomduan.quanlydathang_admin.model.Admin;
 import com.nhomduan.quanlydathang_admin.model.Permission;
 
@@ -32,6 +33,8 @@ public class AccountFragment extends Fragment {
     private TextView tvXemTaiKhoan;
     private TextView tvLogOut;
     private CardView cardview;
+
+    private MainActivity mainActivity;
 
 
 
@@ -81,9 +84,9 @@ public class AccountFragment extends Fragment {
     }
 
     private void setUpToolbar() {
-        toolbar.setNavigationOnClickListener(v -> {
-            requireActivity().getSupportFragmentManager().popBackStack();
-        });
+        setHasOptionsMenu(true);
+        mainActivity = (MainActivity) requireActivity();
+        mainActivity.setSupportActionBar(toolbar);
     }
 
     private void initView(View view) {

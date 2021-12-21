@@ -147,4 +147,14 @@ public class Product implements Serializable {
         map.put("trang_thai", trang_thai);
         return  map;
     }
+
+    public boolean isContentsTheSame(Product other){
+        return this.hashCode() == this.hashCode();
+    }
+
+    public boolean equals(Product other) {
+        return  this.getId().equals(other.getId());
+    }
+
+
 }

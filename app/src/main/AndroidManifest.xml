@@ -12,14 +12,8 @@
         android:roundIcon="@mipmap/ic_launcher_round"
         android:supportsRtl="true"
         android:theme="@style/Theme.QuanLyBanHang">
-        <activity
-            android:name=".activities.DonHangChiTietActivity"
-            android:exported="false" />
         <activity android:name=".activities.MainActivity"
             />
-        <activity android:name=".activities.ShowProductActivity"
-
-            android:exported="false" />
         <activity
             android:name=".activities.FlashActivity"
 

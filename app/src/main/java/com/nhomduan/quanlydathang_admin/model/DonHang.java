@@ -19,9 +19,18 @@ public class DonHang implements Serializable {
     private long thoiGianGiaoHang;
     private String sdt;
     private String thong_tin_huy_don;
+    private long thoiGianGiaoHangDuKien;
 
 
     public DonHang() {
+    }
+
+    public long getThoiGianGiaoHangDuKien() {
+        return thoiGianGiaoHangDuKien;
+    }
+
+    public void setThoiGianGiaoHangDuKien(long thoiGianGiaoHangDuKien) {
+        this.thoiGianGiaoHangDuKien = thoiGianGiaoHangDuKien;
     }
 
     public String getSdt() {
@@ -141,6 +150,8 @@ public class DonHang implements Serializable {
         Map<String, Object> map = new HashMap<String, Object>();
         map.put("don_hang_chi_tiets", don_hang_chi_tiets);
         map.put("thong_tin_huy_don", thong_tin_huy_don);
+        map.put("tong_tien", tong_tien);
+        map.put("thoiGianGiaoHangDuKien", thoiGianGiaoHangDuKien);
         return map;
     }
 

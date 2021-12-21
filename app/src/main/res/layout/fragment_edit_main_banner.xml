@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:orientation="vertical"
+    android:layout_height="match_parent"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    tools:context=".adapter.EditMainBannerFragment">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@drawable/gradients"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent"
+        app:navigationIcon="@drawable/ic_back"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:title="Chỉnh sửa Banner Chính"
+        app:titleTextColor="@color/white" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:layout_weight="1"
+        android:id="@+id/rcvBanner"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"/>
+
+    <androidx.appcompat.widget.LinearLayoutCompat
+        android:gravity="center"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:background="#3EDFCB"
+            android:textSize="18sp"
+            android:id="@+id/btnReset"
+            android:textColor="@color/white"
+            android:text="Đặt lại"
+            android:layout_marginVertical="20dp"
+            android:minWidth="100dp"
+            android:layout_marginHorizontal="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:background="#3EDFCB"
+            android:textSize="18sp"
+            android:textColor="@color/white"
+            android:text="Lưu"
+            android:minWidth="100dp"
+            android:id="@+id/btnSave"
+            android:layout_marginHorizontal="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+        <androidx.appcompat.widget.AppCompatButton
+            android:background="#3EDFCB"
+            android:textSize="18sp"
+            android:textColor="@color/white"
+            android:text="Thêm"
+            android:minWidth="100dp"
+            android:id="@+id/btnAddItem"
+            android:layout_marginHorizontal="10dp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"/>
+
+    </androidx.appcompat.widget.LinearLayoutCompat>
+
+</LinearLayout>

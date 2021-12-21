@@ -27,11 +27,6 @@ public class DanhSachDonHangFragment extends Fragment {
     private ViewPager2 viewpager;
 
 
-    private MainActivity activity;
-    private FragmentManager fragmentManager;
-    private FragmentActivity fragmentActivity;
-
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
@@ -43,34 +38,27 @@ public class DanhSachDonHangFragment extends Fragment {
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initView(view);
+        setUpToolbar();
         setUpTabLayoutAndViewPager();
-
     }
-
-    private void setUpTabLayoutAndViewPager() {
-        DanhSachDonHangPagerAdapter danhSachDonHangPagerAdapter = new DanhSachDonHangPagerAdapter(fragmentActivity);
-        viewpager.setAdapter(danhSachDonHangPagerAdapter);
-        new TabLayoutMediator(tabLayout, viewpager,
-                (tab, position) -> tab.setText(TrangThai.values()[position].getTrangThai())).attach();
-        viewpager.setUserInputEnabled(true);
-    }
-
-
 
     private void initView(View view) {
         toolbar = view.findViewById(R.id.toolbar);
         tabLayout = view.findViewById(R.id.tabLayout);
         viewpager = view.findViewById(R.id.viewpager);
+    }
 
-        fragmentManager = getParentFragmentManager();
-        fragmentActivity = getActivity();
-        activity = (MainActivity) requireActivity();
-
+    private void setUpToolbar() {
+        MainActivity activity = (MainActivity) requireActivity();
         setHasOptionsMenu(true);
         activity.setSupportActionBar(toolbar);
     }
 
-
-
-
+    private void setUpTabLayoutAndViewPager() {
+        DanhSachDonHangPagerAdapter danhSachDonHangPagerAdapter = new DanhSachDonHangPagerAdapter(requireActivity());
+        viewpager.setAdapter(danhSachDonHangPagerAdapter);
+        new TabLayoutMediator(tabLayout, viewpager,
+                (tab, position) -> tab.setText(TrangThai.values()[position].getTrangThai())).attach();
+        viewpager.setUserInputEnabled(true);
+    }
 }

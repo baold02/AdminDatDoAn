@@ -8,8 +8,12 @@ import android.net.Uri;
 import android.webkit.MimeTypeMap;
 import android.widget.Toast;
 
+import com.nhomduan.quanlydathang_admin.model.Product;
+
 import java.text.NumberFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Locale;
 
 public class OverUtils {
@@ -35,4 +39,34 @@ public class OverUtils {
         return mime.getExtensionFromMimeType(cr.getType(uri));
     }
 
+    public static List<Product> filterProduct(List<Product> products) {
+        List<Product> result = new ArrayList<>();
+        for(Product product : products) {
+            if(product.getTrang_thai().equals(HOAT_DONG)) {
+                result.add(product);
+            }
+        }
+        return result;
+    }
+
+    public static List<Product> filterProduct2(List<Product> products) {
+        List<Product> result = new ArrayList<>();
+        for(Product product : products) {
+            if(product.getTrang_thai().equals(HOAT_DONG) || product.getTrang_thai().equals(SAP_RA_MAT)) {
+                result.add(product);
+            }
+        }
+        return result;
+    }
+
+
+    public static List<Product> filterProduct3(List<Product> resultList) {
+        List<Product> result = new ArrayList<>();
+        for(Product product : resultList) {
+            if(product.getSo_luong_da_ban() > 0) {
+                result.add(product);
+            }
+        }
+        return result;
+    }
 }

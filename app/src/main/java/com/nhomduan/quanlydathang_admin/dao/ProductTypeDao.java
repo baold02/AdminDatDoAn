@@ -106,10 +106,20 @@ public class ProductTypeDao {
 
     public void getProductTypeById(String id, IAfterGetAllObject iAfterGetAllObject) {
         FirebaseDatabase.getInstance().getReference().child("loai_sp").child(id)
-                .get().addOnSuccessListener(dataSnapshot -> {
-                    LoaiSP loaiSP = dataSnapshot.getValue(LoaiSP.class);
-                    iAfterGetAllObject.iAfterGetAllObject(loaiSP);
-                });
+                .get().addOnCompleteListener(new OnCompleteListener<DataSnapshot>() {
+            @Override
+            public void onComplete(@NonNull Task<DataSnapshot> task) {
+                if(task.isSuccessful()) {
+                    DataSnapshot dataSnapshot = task.getResult();
+                    if(dataSnapshot != null) {
+                        LoaiSP loaiSP = dataSnapshot.getValue(LoaiSP.class);
+                        iAfterGetAllObject.iAfterGetAllObject(loaiSP);
+                    } else {
+                        iAfterGetAllObject.iAfterGetAllObject(null);
+                    }
+                }
+            }
+        });
     }
 
     public void insertProductType(LoaiSP loaiSP, IAfterInsertObject iAfterInsertObject) {

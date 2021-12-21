@@ -27,6 +27,7 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.tasks.OnCompleteListener;
 import com.google.android.gms.tasks.OnFailureListener;
@@ -53,6 +54,8 @@ import com.nhomduan.quanlydathang_admin.interface_.IAfterInsertObject;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterUpdateObject;
 import com.nhomduan.quanlydathang_admin.interface_.IDone;
 import com.nhomduan.quanlydathang_admin.interface_.OnClickItem;
+import com.nhomduan.quanlydathang_admin.interface_.OnDone2;
+import com.nhomduan.quanlydathang_admin.interface_.onDone3;
 import com.nhomduan.quanlydathang_admin.model.DonHang;
 import com.nhomduan.quanlydathang_admin.model.DonHangChiTiet;
 import com.nhomduan.quanlydathang_admin.model.GioHang;
@@ -199,7 +202,7 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
                 @Override
                 public void iAfterGetAllObject(Object obj) {
                     List<LoaiSP> loaiSPList = (List<LoaiSP>) obj;
-                    if(loaiSPList != null) {
+                    if (loaiSPList != null) {
                         if (validSPWhenAdd(loaiSP, loaiSPList)) {
                             saveAndGetImgLinkWhenAdd(loaiSP, imgUriWhenAdd);
                         }
@@ -208,6 +211,7 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
                         dgAddLoading.setVisibility(View.INVISIBLE);
                     }
                 }
+
                 @Override
                 public void onError(DatabaseError error) {
 
@@ -276,29 +280,25 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
         String idSP = FirebaseDatabase.getInstance().getReference("loai_sp").push().getKey();
         loaiSP.setId(idSP);
         if (idSP != null) {
-           ProductTypeDao.getInstance().insertProductType(loaiSP, new IAfterInsertObject() {
-               @Override
-               public void onSuccess(Object obj) {
-                   OverUtils.makeToast(getContext(), "Lưu loại sản phẩm thành công");
-                   dgAddLoading.setVisibility(View.INVISIBLE);
-                   addDialog.dismiss();
-               }
+            ProductTypeDao.getInstance().insertProductType(loaiSP, new IAfterInsertObject() {
+                @Override
+                public void onSuccess(Object obj) {
+                    OverUtils.makeToast(getContext(), "Lưu loại sản phẩm thành công");
+                    dgAddLoading.setVisibility(View.INVISIBLE);
+                    addDialog.dismiss();
+                }
 
-               @Override
-               public void onError(DatabaseError exception) {
-                   OverUtils.makeToast(getContext(), ERROR_MESSAGE);
-                   dgAddLoading.setVisibility(View.INVISIBLE);
-               }
-           });
+                @Override
+                public void onError(DatabaseError exception) {
+                    OverUtils.makeToast(getContext(), ERROR_MESSAGE);
+                    dgAddLoading.setVisibility(View.INVISIBLE);
+                }
+            });
         } else {
             OverUtils.makeToast(getContext(), ERROR_MESSAGE);
             dgAddLoading.setVisibility(View.INVISIBLE);
         }
     }
-
-
-
-
 
 
     @Override
@@ -313,59 +313,32 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
         }
     }
 
+    private static ProgressDialog progressDialog;
+    private static LoaiSP loaiSP;
+
     @Override
     public void onDeleteItem(Object obj) {
-        LoaiSP loaiSP = (LoaiSP) obj;
+        loaiSP = (LoaiSP) obj;
         if (loaiSP != null) {
             new AlertDialog.Builder(getContext())
-                    .setTitle("Xóa sản phẩm")
+                    .setTitle("Xóa loại sản phẩm")
                     .setMessage("Bạn có chắc chắn muốn xóa?\n Bạn sẽ luôn cả sản phẩm thuộc loại!")
                     .setNegativeButton("Hủy", null)
                     .setPositiveButton("Xóa", (dialog, i) -> {
-                        ProgressDialog progressDialog = new ProgressDialog(getContext());
-                        progressDialog.setMessage("Đang xóa sản phẩm");
+                        progressDialog = new ProgressDialog(getContext());
+                        progressDialog.setMessage("Đang xóa loại sản phẩm");
                         progressDialog.show();
-                        FirebaseDatabase.getInstance().getReference().child("loai_sp").child(loaiSP.getId())
-                                .removeValue();
-                        ProductDao.getInstance().getAllProduct(new IAfterGetAllObject() {
+                        ProductDao.getInstance().getProductByProductType2(loaiSP, new IAfterGetAllObject() {
                             @Override
                             public void iAfterGetAllObject(Object obj) {
                                 List<Product> productList = (List<Product>) obj;
-                                for(Product product : productList) {
-                                    if(product.getLoai_sp().equals(loaiSP.getId())) {
-                                        ngungKinhDoanhPr(product, done0 -> {
-                                            if (done0) {
-                                                xoaSPDT(product, done -> {
-                                                    if (done) {
-                                                        xoaGioHang(product, done1 -> {
-                                                            if (done1) {
-                                                                FirebaseDatabase.getInstance().getReference().child("san_pham").child(product.getId()).removeValue(new DatabaseReference.CompletionListener() {
-                                                                    @Override
-                                                                    public void onComplete(@Nullable DatabaseError error, @NonNull DatabaseReference ref) {
-                                                                        if (error == null) {
-                                                                            OverUtils.makeToast(getContext(), "Xóa thành công");
-                                                                            progressDialog.dismiss();
-                                                                        } else {
-                                                                            progressDialog.cancel();
-                                                                        }
-                                                                    }
-                                                                });
-                                                            } else {
-                                                                progressDialog.cancel();
-                                                            }
-                                                        });
-                                                    } else {
-                                                        progressDialog.cancel();
-                                                    }
-                                                });
-                                            } else {
-                                                progressDialog.cancel();
-                                            }
-                                        });
-                                        xoaDonHang(product);
-                                        xoaSoLuongSanPhamCuaLoai(product);
+                                ngungKinhDoanhPr(productList, done -> {
+                                    if (done) {
+                                        deleteCart(productList);
+                                        deleteFavoriteProduct(productList);
                                     }
-                                }
+                                });
+                                xoaDonHang(productList);
                             }
 
                             @Override
@@ -379,6 +352,138 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
 
         }
 
+    }
+
+    private static boolean finishDeleteCart = false;
+    private static int counterDeleteCart = 0;
+
+    private void deleteCart(List<Product> productList) {
+        UserDao.getInstance().getAllUser2(new IAfterGetAllObject() {
+            @Override
+            public void iAfterGetAllObject(Object obj) {
+                List<User> userList = (List<User>) obj;
+                for (User user : userList) {
+                    counterDeleteCart++;
+                    UserDao.getInstance().getGioHangOfUser(user, new IAfterGetAllObject() {
+                        @Override
+                        public void iAfterGetAllObject(Object obj) {
+                            List<GioHang> gioHangList = (List<GioHang>) obj;
+                            List<GioHang> idList = new ArrayList<>();
+                            for (int k = 0; k < productList.size(); k++) {
+                                for (int i = 0; i < gioHangList.size(); i++) {
+                                    if (productList.get(k).getId().equals(gioHangList.get(i).getMa_sp())) {
+                                        idList.add(gioHangList.get(i));
+                                    }
+                                }
+                            }
+
+                            for (int i = 0; i < idList.size(); i++) {
+                                gioHangList.remove(idList.get(i));
+                            }
+                            user.setGio_hang(gioHangList);
+                            UserDao.getInstance().updateUser(user, user.toMapGioHang());
+                            if (counterDeleteCart == userList.size()) {
+                                counterDeleteCart = 0;
+                                finishDeleteCart = true;
+                                checkDelete(productList);
+                            }
+                        }
+
+                        @Override
+                        public void onError(DatabaseError error) {
+                            OverUtils.makeToast(getContext(), ERROR_MESSAGE);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onError(DatabaseError error) {
+                OverUtils.makeToast(getContext(), ERROR_MESSAGE);
+            }
+        });
+    }
+
+
+    private static boolean finishDeleteFavoriteProduct = false;
+    private static int counterFavoriteProduct = 0;
+
+    private void deleteFavoriteProduct(List<Product> productList) {
+        UserDao.getInstance().getAllUser2(new IAfterGetAllObject() {
+            @Override
+            public void iAfterGetAllObject(Object obj) {
+                List<User> userList = (List<User>) obj;
+                for (User user : userList) {
+                    counterFavoriteProduct++;
+                    UserDao.getInstance().getSanPhamYeuThichOfUser(user, new IAfterGetAllObject() {
+                        @Override
+                        public void iAfterGetAllObject(Object obj) {
+                            List<String> sanPhamYeuThichList = (List<String>) obj;
+                            List<String> sanPhamYeuThichBiXoa = new ArrayList<>();
+                            for (int k = 0; k < productList.size(); k++) {
+                                for (int i = 0; i < sanPhamYeuThichList.size(); i++) {
+                                    if (productList.get(k).getId().equals(sanPhamYeuThichList.get(i))) {
+                                        sanPhamYeuThichBiXoa.add(sanPhamYeuThichList.get(i));
+                                    }
+                                }
+                            }
+
+                            for (int i = 0; i < sanPhamYeuThichBiXoa.size(); i++) {
+                                sanPhamYeuThichList.remove(sanPhamYeuThichBiXoa.get(i));
+                            }
+                            user.setMa_sp_da_thich(sanPhamYeuThichList);
+                            UserDao.getInstance().updateUser(user, user.toMapSPDaThich());
+                            if (counterFavoriteProduct == userList.size()) {
+                                finishDeleteFavoriteProduct = true;
+                                counterFavoriteProduct = 0;
+                                checkDelete(productList);
+                            }
+                        }
+
+                        @Override
+                        public void onError(DatabaseError error) {
+                            OverUtils.makeToast(getContext(), ERROR_MESSAGE);
+                        }
+                    });
+                }
+            }
+
+            @Override
+            public void onError(DatabaseError error) {
+                OverUtils.makeToast(getContext(), ERROR_MESSAGE);
+            }
+        });
+    }
+
+    static int countDeleteProduct = 0;
+
+    private synchronized void checkDelete(List<Product> productList) {
+        if (finishDeleteCart && finishDeleteFavoriteProduct) {
+            for (int i = 0; i < productList.size(); i++) {
+                countDeleteProduct++;
+                ProductDao.getInstance().deleteProduct(productList.get(i), new IAfterDeleteObject() {
+                    @Override
+                    public void onSuccess(Object obj) {
+                        if (countDeleteProduct == productList.size()) {
+                            countDeleteProduct = 0;
+                            FirebaseDatabase.getInstance().getReference()
+                                    .child("loai_sp").child(loaiSP.getId())
+                                    .removeValue((error, ref) -> {
+                                        if (error == null) {
+                                            progressDialog.dismiss();
+                                            OverUtils.makeToast(getContext(), "Xóa loại sản phẩm thành công");
+                                        }
+                                    });
+                        }
+                    }
+
+                    @Override
+                    public void onError(DatabaseError error) {
+
+                    }
+                });
+            }
+        }
     }
 
 
@@ -459,9 +564,6 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
     }
 
 
-
-
-
     public boolean validSPWhenEdit(LoaiSP loaiSP, List<LoaiSP> loaiSPList) {
         for (LoaiSP lSp : loaiSPList) {
             if (lSp.getId().equals(loaiSP.getId())) {
@@ -520,27 +622,22 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
     }
 
     private void updateLoaiSP(LoaiSP loaiSP) {
-       ProductTypeDao.getInstance().updateProductType(loaiSP, loaiSP.toMap(), new IAfterUpdateObject() {
-           @Override
-           public void onSuccess(Object obj) {
-               OverUtils.makeToast(getContext(), "Sửa thành công");
-               dgEditLoading.setVisibility(View.INVISIBLE);
-               editDialog.dismiss();
+        ProductTypeDao.getInstance().updateProductType(loaiSP, loaiSP.toMap(), new IAfterUpdateObject() {
+            @Override
+            public void onSuccess(Object obj) {
+                OverUtils.makeToast(getContext(), "Sửa thành công");
+                dgEditLoading.setVisibility(View.INVISIBLE);
+                editDialog.dismiss();
 
-           }
+            }
 
-           @Override
-           public void onError(DatabaseError error) {
+            @Override
+            public void onError(DatabaseError error) {
                 OverUtils.makeToast(getContext(), ERROR_MESSAGE);
-               dgEditLoading.setVisibility(View.INVISIBLE);
-           }
-       });
+                dgEditLoading.setVisibility(View.INVISIBLE);
+            }
+        });
     }
-
-
-
-
-
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
@@ -574,187 +671,96 @@ public class DanhSachLoaiSanPhamFragment extends Fragment implements OnClickItem
         }
     }
 
-
-    private void xoaSoLuongSanPhamCuaLoai(Product product) {
-        String loaiSPId = product.getLoai_sp();
-        ProductTypeDao.getInstance().getAllProductType(new IAfterGetAllObject() {
-            @Override
-            public void iAfterGetAllObject(Object obj) {
-                List<LoaiSP> loaiSPList = (List<LoaiSP>) obj;
-                for(int i = 0; i < loaiSPList.size(); i++) {
-                    if(loaiSPList.get(i).getId().equals(loaiSPId)) {
-                        LoaiSP loaiSP = loaiSPList.get(i);
-                        loaiSP.setSoSanPhamThuocLoai(loaiSP.getSoSanPhamThuocLoai() - 1);
-                        ProductTypeDao.getInstance().updateProductType(loaiSPList.get(i), loaiSP.toMapSoLuongSanPham());
-                        break;
-                    }
-                }
-
-            }
-
-            @Override
-            public void onError(DatabaseError error) {
-
-            }
-        });
-    }
-
-    public void xoaDonHang(Product product) {
+    public void xoaDonHang(List<Product> productList) {
         OrderDao.getInstance().getAllDonHang(new IAfterGetAllObject() {
             @Override
             public void iAfterGetAllObject(Object obj) {
                 List<DonHang> donHangList = (List<DonHang>) obj;
                 for (DonHang donHang : donHangList) {
-                    if (donHang.getTrang_thai().equals(TrangThai.CXN.getTrangThai())) {
+                    if (donHang.getTrang_thai().equals(TrangThai.CHUA_XAC_NHAN.getTrangThai())) {
                         List<DonHangChiTiet> donHangChiTietList = donHang.getDon_hang_chi_tiets();
-                        if (donHangChiTietList.size() == 1) {
-                            donHang.setTrang_thai(TrangThai.HD.getTrangThai());
-                            donHang.setThong_tin_huy_don("Admin hủy đơn do sản phẩm "
-                                    + donHangChiTietList.get(0).getProduct().getName() + " không còn được bán");
+                        List<DonHangChiTiet> donHangChiTietBiXoaList = new ArrayList<>();
+                        for (int i = 0; i < productList.size(); i++) {
+                            for (int k = 0; k < donHangChiTietList.size(); k++) {
+                                if (donHangChiTietList.get(k).getProduct().getId().equals(productList.get(i).getId())) {
+                                    donHangChiTietBiXoaList.add(donHangChiTietList.get(k));
+                                }
+                            }
+                        }
+
+                        int soTienCanXoa = 0;
+                        long thoiGianGiam = 0;
+                        for (int i = 0; i < donHangChiTietBiXoaList.size(); i++) {
+                            Product product = donHangChiTietBiXoaList.get(i).getProduct();
+                            int soLuong = donHangChiTietBiXoaList.get(i).getSo_luong();
+
+                            soTienCanXoa += (product.getGia_ban() - (product.getGia_ban() * product.getKhuyen_mai())) * soLuong;
+                            thoiGianGiam += product.getThoiGianCheBien();
+                        }
+
+                        for (int i = 0; i < donHangChiTietBiXoaList.size(); i++) {
+                            donHangChiTietList.remove(donHangChiTietBiXoaList.get(i));
+                        }
+
+                        if (donHangChiTietList.size() == 0) {
+                            donHang.setTrang_thai(TrangThai.HUY_DON.getTrangThai());
+                            donHang.setThong_tin_huy_don("Admin hủy đơn do sản phẩm loại "
+                                    + loaiSP.getName() + " không còn được bán");
                             OrderDao.getInstance().updateDonHang(donHang, donHang.toMapHuyDon());
                         } else {
-                            int viTri = -1;
-                            for (int i = 0; i < donHangChiTietList.size(); i++) {
-                                if (donHangChiTietList.get(i).getProduct().getId().equals(product.getId())) {
-                                    viTri = i;
-                                }
-                            }
-                            if (viTri != -1) {
-                                donHang.setThong_tin_huy_don("Admin hủy sản phẩm "
-                                        + donHangChiTietList.get(viTri).getProduct().getName()
-                                        + " do không còn được bán!");
-                                donHangChiTietList.remove(viTri);
-                                donHang.setDon_hang_chi_tiets(donHangChiTietList);
-                                OrderDao.getInstance().updateDonHang(donHang, donHang.toMapHuySPTrongDon());
-                            }
+                            donHang.setThoiGianGiaoHangDuKien(donHang.getThoiGianGiaoHangDuKien() - thoiGianGiam);
+                            donHang.setTong_tien(donHang.getTong_tien() - soTienCanXoa);
+                            donHang.setThong_tin_huy_don("Admin hủy sản phẩm loại "
+                                    + loaiSP.getName()
+                                    + " do không còn được bán!");
+                            donHang.setDon_hang_chi_tiets(donHangChiTietList);
+                            OrderDao.getInstance().updateDonHang(donHang, donHang.toMapHuySPTrongDon());
                         }
+                    }
 
+                }
+            }
+
+            @Override
+            public void onError(DatabaseError error) {
+                OverUtils.makeToast(getContext(), ERROR_MESSAGE);
+            }
+        });
+    }
+
+
+    public void ngungKinhDoanhPr(List<Product> productList, IDone iDone) {
+        if(productList.size() == 0) {
+            FirebaseDatabase.getInstance().getReference()
+                    .child("loai_sp").child(loaiSP.getId())
+                    .removeValue((error, ref) -> {
+                        if (error == null) {
+                            progressDialog.dismiss();
+                            OverUtils.makeToast(getContext(), "Xóa loại sản phẩm thành công");
+                        }
+                    });
+            return;
+        }
+        for (int i = 0; i < productList.size(); i++) {
+            Product product = productList.get(i);
+            product.setTrang_thai(OverUtils.DUNG_KINH_DOANH);
+            int finalI = i;
+            ProductDao.getInstance().updateProduct(product, product.toMapTrangThaiSP(), new IAfterUpdateObject() {
+                @Override
+                public void onSuccess(Object obj) {
+                    if (finalI == productList.size() - 1) {
+                        iDone.onDone(true);
                     }
                 }
-            }
 
-            @Override
-            public void onError(DatabaseError error) {
-
-            }
-        });
-    }
-
-
-
-    public void ngungKinhDoanhPr(Product product, IDone iDone) {
-        product.setTrang_thai(OverUtils.DUNG_KINH_DOANH);
-        ProductDao.getInstance().updateProduct(product, product.toMapTrangThaiSP(), new IAfterUpdateObject() {
-            @Override
-            public void onSuccess(Object obj) {
-                iDone.onDone(true);
-            }
-
-            @Override
-            public void onError(DatabaseError error) {
-                OverUtils.makeToast(getContext(), ERROR_MESSAGE);
-                iDone.onDone(false);
-            }
-        });
-    }
-
-
-    int couterXoaGioHang = 0;
-
-    private void xoaGioHang(Product product, IDone iDone) {
-        UserDao.getInstance().getAllUser(new IAfterGetAllObject() {
-            @Override
-            public void iAfterGetAllObject(Object obj) {
-                List<User> userList = (List<User>) obj;
-                for (User user : userList) {
-                    couterXoaGioHang++;
-                    UserDao.getInstance().getGioHangOfUser(user, new IAfterGetAllObject() {
-                        @Override
-                        public void iAfterGetAllObject(Object obj) {
-                            List<GioHang> gioHangList = (List<GioHang>) obj;
-                            int viTri = -1;
-                            for (int i = 0; i < gioHangList.size(); i++) {
-                                if (gioHangList.get(i).getMa_sp().equals(product.getId())) {
-                                    viTri = i;
-                                    break;
-                                }
-                            }
-                            if (viTri != -1) {
-                                gioHangList.remove(viTri);
-                                user.setGio_hang(gioHangList);
-                                UserDao.getInstance().updateUser(user, user.toMapGioHang());
-                            }
-                            if (couterXoaGioHang == userList.size()) {
-                                couterXoaGioHang = 0;
-                                iDone.onDone(true);
-                            }
-
-                        }
-
-                        @Override
-                        public void onError(DatabaseError error) {
-                            OverUtils.makeToast(getContext(), ERROR_MESSAGE);
-                            iDone.onDone(false);
-                        }
-                    });
+                @Override
+                public void onError(DatabaseError error) {
+                    OverUtils.makeToast(getContext(), ERROR_MESSAGE);
+                    iDone.onDone(false);
                 }
-            }
+            });
+        }
 
-            @Override
-            public void onError(DatabaseError error) {
-                OverUtils.makeToast(getContext(), ERROR_MESSAGE);
-                iDone.onDone(false);
-            }
-        });
-    }
-
-
-    int couterSPDT = 0;
-
-    private void xoaSPDT(Product product, IDone iDone) {
-        UserDao.getInstance().getAllUser(new IAfterGetAllObject() {
-            @Override
-            public void iAfterGetAllObject(Object obj) {
-                List<User> userList = (List<User>) obj;
-                for (User user : userList) {
-                    couterSPDT++;
-                    UserDao.getInstance().getSanPhamYeuThichOfUser(user, new IAfterGetAllObject() {
-                        @Override
-                        public void iAfterGetAllObject(Object obj) {
-                            List<String> sanPhamYeuThichList = (List<String>) obj;
-                            int viTri = -1;
-                            for (int i = 0; i < sanPhamYeuThichList.size(); i++) {
-                                if (sanPhamYeuThichList.get(i).equals(product.getId())) {
-                                    viTri = i;
-                                    break;
-                                }
-                            }
-                            if (viTri != -1) {
-                                sanPhamYeuThichList.remove(viTri);
-                                user.setMa_sp_da_thich(sanPhamYeuThichList);
-                                UserDao.getInstance().updateUser(user, user.toMapSPDaThich());
-                            }
-                            if (couterSPDT == userList.size()) {
-                                couterSPDT = 0;
-                                iDone.onDone(true);
-                            }
-                        }
-
-                        @Override
-                        public void onError(DatabaseError error) {
-                            OverUtils.makeToast(getContext(), ERROR_MESSAGE);
-                            iDone.onDone(false);
-                        }
-                    });
-                }
-            }
-
-            @Override
-            public void onError(DatabaseError error) {
-                OverUtils.makeToast(getContext(), ERROR_MESSAGE);
-                iDone.onDone(false);
-            }
-        });
     }
 
 }

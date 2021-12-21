@@ -2,8 +2,56 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
+    android:orientation="vertical"
     android:layout_height="match_parent"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     tools:context=".fragment.DashBroadFragment">
+
+    <androidx.appcompat.widget.Toolbar
+        android:id="@+id/toolbar"
+        android:layout_width="match_parent"
+        android:layout_height="?attr/actionBarSize"
+        android:background="@drawable/gradients"
+        app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
+        app:title="Điều khiển"
+        app:titleTextColor="@color/white" />
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardview"
+        android:elevation="3dp"
+        app:cardCornerRadius="8dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginHorizontal="32dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/tvEditModule"
+            android:text="Module"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:layout_height="40dp"
+            android:layout_width="match_parent"/>
+    </androidx.cardview.widget.CardView>
+
+    <androidx.cardview.widget.CardView
+        android:id="@+id/cardview2"
+        android:elevation="3dp"
+        app:cardCornerRadius="8dp"
+        android:layout_marginTop="32dp"
+        android:layout_marginHorizontal="32dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+        <TextView
+            android:id="@+id/tvMainBanner"
+            android:text="Banner"
+            android:textColor="@color/black"
+            android:textSize="20sp"
+            android:gravity="center"
+            android:layout_height="40dp"
+            android:layout_width="match_parent"/>
+    </androidx.cardview.widget.CardView>
+
+
 
 </LinearLayout>

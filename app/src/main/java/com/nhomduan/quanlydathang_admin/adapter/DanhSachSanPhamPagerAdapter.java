@@ -1,38 +1,34 @@
 package com.nhomduan.quanlydathang_admin.adapter;
 
-import android.annotation.SuppressLint;
+import android.os.Bundle;
 
 import androidx.annotation.NonNull;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.lifecycle.Lifecycle;
 import androidx.viewpager2.adapter.FragmentStateAdapter;
 
 import com.nhomduan.quanlydathang_admin.fragment.DanhSachSanPhamByLoaiSPFragment;
 import com.nhomduan.quanlydathang_admin.model.LoaiSP;
 
+import java.io.Serializable;
 import java.util.List;
 
 public class DanhSachSanPhamPagerAdapter extends FragmentStateAdapter {
-    private List<LoaiSP> loaiSPList;
+    private final List<LoaiSP> loaiSPList;
 
-    public DanhSachSanPhamPagerAdapter(@NonNull FragmentManager fragmentManager, @NonNull Lifecycle lifecycle, List<LoaiSP> loaiSPList) {
-        super(fragmentManager, lifecycle);
+    public DanhSachSanPhamPagerAdapter(@NonNull FragmentActivity fragmentActivity, List<LoaiSP> loaiSPList) {
+        super(fragmentActivity);
         this.loaiSPList = loaiSPList;
-    }
-
-
-    @SuppressLint("NotifyDataSetChanged")
-    public void setData(List<LoaiSP> loaiSPList) {
-        this.loaiSPList = loaiSPList;
-        notifyDataSetChanged();
     }
 
     @NonNull
     @Override
     public Fragment createFragment(int position) {
-        return new DanhSachSanPhamByLoaiSPFragment(loaiSPList.get(position));
+        Fragment fragment = new DanhSachSanPhamByLoaiSPFragment();
+        Bundle bundle = new Bundle();
+        bundle.putSerializable("loai_sp", (Serializable) loaiSPList.get(position));
+        fragment.setArguments(bundle);
+        return fragment;
     }
 
     @Override

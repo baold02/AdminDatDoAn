@@ -2,22 +2,19 @@ package com.nhomduan.quanlydathang_admin.fragment;
 
 import android.content.Intent;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.widget.Toolbar;
-import androidx.fragment.app.Fragment;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
 import android.view.KeyEvent;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.appcompat.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import com.nhomduan.quanlydathang_admin.R;
-import com.nhomduan.quanlydathang_admin.activities.DonHangChiTietActivity;
 import com.nhomduan.quanlydathang_admin.adapter.DoanhThuAdapter;
 import com.nhomduan.quanlydathang_admin.interface_.OnClickItem;
 import com.nhomduan.quanlydathang_admin.model.DonHang;
@@ -44,21 +41,16 @@ public class DanhSachDoanhThuDonHangFragment extends Fragment implements OnClick
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        //code
         initView(view);
-        getDuLieu();
         setUpToolbar();
-        setUpListDoanhThu();
+        getData();
+        setUpDoanhThuList();
     }
 
-    private void getDuLieu() {
-        Bundle bundle = getArguments();
-        donHangList = (List<DonHang>) bundle.getSerializable("don_hang");
-    }
-
-    private void setUpListDoanhThu() {
-        doanhThuAdapter = new DoanhThuAdapter(donHangList, this);
-        rcvDoanhThuByTime.setLayoutManager(new LinearLayoutManager(getContext()));
-        rcvDoanhThuByTime.setAdapter(doanhThuAdapter);
+    private void initView(View view) {
+        toolbar = view.findViewById(R.id.toolbar);
+        rcvDoanhThuByTime = view.findViewById(R.id.rcvDoanhThuByTime);
     }
 
     private void setUpToolbar() {
@@ -67,35 +59,28 @@ public class DanhSachDoanhThuDonHangFragment extends Fragment implements OnClick
         });
     }
 
-    private void initView(View view) {
-        toolbar = view.findViewById(R.id.toolbar);
-        rcvDoanhThuByTime = view.findViewById(R.id.rcvDoanhThuByTime);
+    private void getData() {
+        Bundle bundle = getArguments();
+        donHangList = (List<DonHang>) bundle.getSerializable("don_hang");
     }
 
-    @Override
-    public void onResume() {
-        super.onResume();
-        getView().setFocusableInTouchMode(true);
-        getView().requestFocus();
-        getView().setOnKeyListener(new View.OnKeyListener() {
-            @Override
-            public boolean onKey(View v, int keyCode, KeyEvent event) {
-                if (event.getAction() == KeyEvent.ACTION_UP && keyCode == KeyEvent.KEYCODE_BACK) {
-                    requireActivity().getSupportFragmentManager().popBackStack();
-                    return true;
-                }
-                return false;
-            }
-        });
-
+    private void setUpDoanhThuList() {
+        doanhThuAdapter = new DoanhThuAdapter(donHangList, this);
+        rcvDoanhThuByTime.setLayoutManager(new LinearLayoutManager(getContext()));
+        rcvDoanhThuByTime.setAdapter(doanhThuAdapter);
     }
 
     @Override
     public void onClickItem(Object obj) {
-        DonHang donHang = (DonHang) obj;
-        Intent intent = new Intent(getContext(), DonHangChiTietActivity.class);
-        intent.putExtra("don_hang", donHang);
-        startActivity(intent);
+        Fragment fragment = new ChiTietDonHangFragment();
+        Bundle args = new Bundle();
+        args.putString("ma_don_hang", String.valueOf(obj));
+        fragment.setArguments(args);
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contentFrame, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     @Override

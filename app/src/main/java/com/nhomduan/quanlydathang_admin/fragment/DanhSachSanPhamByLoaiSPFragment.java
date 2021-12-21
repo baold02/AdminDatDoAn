@@ -3,48 +3,40 @@ package com.nhomduan.quanlydathang_admin.fragment;
 import static com.nhomduan.quanlydathang_admin.Utils.OverUtils.ERROR_MESSAGE;
 
 import android.app.AlertDialog;
-import android.app.Dialog;
+import android.app.DownloadManager;
 import android.app.ProgressDialog;
-import android.content.DialogInterface;
-import android.content.Intent;
+import android.content.Context;
 import android.os.Bundle;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentActivity;
-import androidx.fragment.app.FragmentManager;
-import androidx.recyclerview.widget.DividerItemDecoration;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
-import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
+import androidx.fragment.app.Fragment;
+import androidx.recyclerview.widget.DividerItemDecoration;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
+import com.google.firebase.database.ChildEventListener;
+import com.google.firebase.database.DataSnapshot;
 import com.google.firebase.database.DatabaseError;
-import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.Query;
 import com.nhomduan.quanlydathang_admin.R;
 import com.nhomduan.quanlydathang_admin.Utils.OverUtils;
-import com.nhomduan.quanlydathang_admin.activities.DonHangChiTietActivity;
-import com.nhomduan.quanlydathang_admin.activities.MainActivity;
-import com.nhomduan.quanlydathang_admin.activities.ShowProductActivity;
 import com.nhomduan.quanlydathang_admin.adapter.SanPhamAdapter;
 import com.nhomduan.quanlydathang_admin.dao.OrderDao;
 import com.nhomduan.quanlydathang_admin.dao.ProductDao;
 import com.nhomduan.quanlydathang_admin.dao.ProductTypeDao;
 import com.nhomduan.quanlydathang_admin.dao.UserDao;
-import com.nhomduan.quanlydathang_admin.dialog.SingleChoiceDialog;
-import com.nhomduan.quanlydathang_admin.interface_.IAfterDeleteObject;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterGetAllObject;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterUpdateObject;
 import com.nhomduan.quanlydathang_admin.interface_.IDone;
-import com.nhomduan.quanlydathang_admin.interface_.IOnChangeFragment;
 import com.nhomduan.quanlydathang_admin.interface_.OnClickItem;
-import com.nhomduan.quanlydathang_admin.interface_.OnStopProduct;
+import com.nhomduan.quanlydathang_admin.interface_.OnDelete;
 import com.nhomduan.quanlydathang_admin.model.DonHang;
 import com.nhomduan.quanlydathang_admin.model.DonHangChiTiet;
 import com.nhomduan.quanlydathang_admin.model.GioHang;
@@ -54,22 +46,21 @@ import com.nhomduan.quanlydathang_admin.model.TrangThai;
 import com.nhomduan.quanlydathang_admin.model.User;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
-import java.util.Objects;
 
-public class DanhSachSanPhamByLoaiSPFragment extends Fragment implements OnClickItem {
-
+public class DanhSachSanPhamByLoaiSPFragment extends Fragment implements OnClickItem, OnDelete {
     private TextView tvSoSanPham;
     private RecyclerView rcvListSPByLoai;
-    private final LoaiSP loaiSP;
     private List<Product> productList;
     private SanPhamAdapter sanPhamAdapter;
 
-    private MainActivity activity;
+    private Context mContext;
 
-
-    public DanhSachSanPhamByLoaiSPFragment(LoaiSP loaiSP) {
-        this.loaiSP = loaiSP;
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+        mContext = context;
     }
 
     @Override
@@ -81,14 +72,31 @@ public class DanhSachSanPhamByLoaiSPFragment extends Fragment implements OnClick
     @Override
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+        //code
         initView(view);
-        setUpListSanPhamByLoai(loaiSP);
+        getData();
+    }
+
+    private void initView(View view) {
+        tvSoSanPham = view.findViewById(R.id.tvSoSanPham);
+        rcvListSPByLoai = view.findViewById(R.id.rcvListSPByLoai);
+    }
+
+    private void getData() {
+        Bundle bundle = getArguments();
+        if(bundle != null) {
+            LoaiSP loaiSP = (LoaiSP) bundle.getSerializable("loai_sp");
+            if(loaiSP != null) {
+                setUpListSanPhamByLoai(loaiSP);
+            }
+        }
+
     }
 
     private void setUpListSanPhamByLoai(LoaiSP loaiSP) {
         productList = new ArrayList<>();
         sanPhamAdapter = new SanPhamAdapter(productList, this);
-        rcvListSPByLoai.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
+        rcvListSPByLoai.addItemDecoration(new DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL));
         rcvListSPByLoai.setLayoutManager(new LinearLayoutManager(getContext()));
         rcvListSPByLoai.setAdapter(sanPhamAdapter);
         ProductDao.getInstance().getProductByProductType(loaiSP, new IAfterGetAllObject() {
@@ -104,20 +112,20 @@ public class DanhSachSanPhamByLoaiSPFragment extends Fragment implements OnClick
                 OverUtils.makeToast(getContext(), ERROR_MESSAGE);
             }
         });
-    }
 
-    private void initView(View view) {
-        tvSoSanPham = view.findViewById(R.id.tvSoSanPham);
-        rcvListSPByLoai = view.findViewById(R.id.rcvListSPByLoai);
-        activity = (MainActivity) getActivity();
     }
 
     @Override
     public void onClickItem(Object obj) {
-        Product product = (Product) obj;
-        Intent intent = new Intent(getContext(), ShowProductActivity.class);
-        intent.putExtra("productId", product.getId());
-        startActivity(intent);
+        Fragment fragment = new ShowProductFragment();
+        Bundle args = new Bundle();
+        args.putString("product_id", String.valueOf(obj));
+        fragment.setArguments(args);
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contentFrame, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     @Override
@@ -125,19 +133,21 @@ public class DanhSachSanPhamByLoaiSPFragment extends Fragment implements OnClick
         Product product = (Product) obj;
         UpdateSanPhamFragment updateSanPhamFragment = new UpdateSanPhamFragment();
         Bundle bundle = new Bundle();
-        bundle.putSerializable("product", product);
+        bundle.putString("productId", product.getId());
         updateSanPhamFragment.setArguments(bundle);
-        activity.getSupportFragmentManager().beginTransaction()
+        requireActivity().getSupportFragmentManager().beginTransaction()
                 .replace(R.id.contentFrame, updateSanPhamFragment)
                 .addToBackStack(null)
                 .commit();
     }
 
 
+    private static Product productNeedDelete;
+    private static ProgressDialog progressDialog;
     @Override
     public void onDeleteItem(Object obj) {
-        Product product = (Product) obj;
-        if (product != null) {
+        productNeedDelete = (Product) obj;
+        if (productNeedDelete != null) {
             new AlertDialog.Builder(getContext())
                     .setTitle("Xóa sản phẩm")
                     .setMessage("Bạn có chắc chắn muốn xóa?" +
@@ -146,61 +156,35 @@ public class DanhSachSanPhamByLoaiSPFragment extends Fragment implements OnClick
                             "\n sản phẩm trong đơn hàng chưa xác nhận")
                     .setNegativeButton("Hủy", null)
                     .setPositiveButton("Xóa", (dialog, i) -> {
-                        ProgressDialog progressDialog = new ProgressDialog(getContext());
+                        progressDialog = new ProgressDialog(getContext());
                         progressDialog.setMessage("Đang xóa sản phẩm");
                         progressDialog.show();
-                        ngungKinhDoanhPr(product, done0 -> {
-                            if (done0) {
-                                xoaSPDT(product, done -> {
-                                    if (done) {
-                                        xoaGioHang(product, done1 -> {
-                                            if (done1) {
-                                                FirebaseDatabase.getInstance().getReference().child("san_pham").child(product.getId()).removeValue(new DatabaseReference.CompletionListener() {
-                                                    @Override
-                                                    public void onComplete(@Nullable DatabaseError error, @NonNull DatabaseReference ref) {
-                                                        if (error == null) {
-                                                            OverUtils.makeToast(getContext(), "Xóa thành công");
-                                                            progressDialog.dismiss();
-                                                        } else {
-                                                            progressDialog.cancel();
-                                                        }
-                                                    }
-                                                });
-                                            } else {
-                                                progressDialog.cancel();
-                                            }
-                                        });
-                                    } else {
-                                        progressDialog.cancel();
-                                    }
-                                });
-                            } else {
-                                progressDialog.cancel();
+                        ngungKinhDoanhPr(productNeedDelete, done -> {
+                            if(done) {
+                                deleteCart(productNeedDelete, DanhSachSanPhamByLoaiSPFragment.this);
+                                deleteFavoriteProduct(productNeedDelete, DanhSachSanPhamByLoaiSPFragment.this);
                             }
                         });
-                        xoaDonHang(product);
-                        xoaSoLuongSanPhamCuaLoai(product);
+                        xoaDonHang(productNeedDelete);
+                        xoaSoLuongSanPhamCuaLoai(productNeedDelete);
                     })
                     .show();
 
         }
     }
 
+
+
     private void xoaSoLuongSanPhamCuaLoai(Product product) {
         String loaiSPId = product.getLoai_sp();
-        ProductTypeDao.getInstance().getAllProductType(new IAfterGetAllObject() {
+        ProductTypeDao.getInstance().getProductTypeById(loaiSPId, new IAfterGetAllObject() {
             @Override
             public void iAfterGetAllObject(Object obj) {
-                List<LoaiSP> loaiSPList = (List<LoaiSP>) obj;
-                for(int i = 0; i < loaiSPList.size(); i++) {
-                    if(loaiSPList.get(i).getId().equals(loaiSPId)) {
-                        LoaiSP loaiSP = loaiSPList.get(i);
-                        loaiSP.setSoSanPhamThuocLoai(loaiSP.getSoSanPhamThuocLoai() - 1);
-                        ProductTypeDao.getInstance().updateProductType(loaiSPList.get(i), loaiSP.toMapSoLuongSanPham());
-                        break;
-                    }
+                if(obj != null) {
+                    LoaiSP loaiSP = (LoaiSP) obj;
+                    loaiSP.setSoSanPhamThuocLoai(loaiSP.getSoSanPhamThuocLoai() - 1);
+                    ProductTypeDao.getInstance().updateProductType(loaiSP, loaiSP.toMapSoLuongSanPham());
                 }
-
             }
 
             @Override
@@ -211,18 +195,37 @@ public class DanhSachSanPhamByLoaiSPFragment extends Fragment implements OnClick
     }
 
 
+
+
+    public void ngungKinhDoanhPr(Product product, IDone iDone) {
+        product.setTrang_thai(OverUtils.DUNG_KINH_DOANH);
+        ProductDao.getInstance().updateProduct(product, product.toMapTrangThaiSP(), new IAfterUpdateObject() {
+            @Override
+            public void onSuccess(Object obj) {
+                iDone.onDone(true);
+            }
+
+            @Override
+            public void onError(DatabaseError error) {
+                OverUtils.makeToast(mContext, ERROR_MESSAGE);
+                iDone.onDone(false);
+            }
+        });
+    }
+
     public void xoaDonHang(Product product) {
         OrderDao.getInstance().getAllDonHang(new IAfterGetAllObject() {
             @Override
             public void iAfterGetAllObject(Object obj) {
                 List<DonHang> donHangList = (List<DonHang>) obj;
                 for (DonHang donHang : donHangList) {
-                    if (donHang.getTrang_thai().equals(TrangThai.CXN.getTrangThai())) {
+                    if (donHang.getTrang_thai().equals(TrangThai.CHUA_XAC_NHAN.getTrangThai())) {
                         List<DonHangChiTiet> donHangChiTietList = donHang.getDon_hang_chi_tiets();
-                        if (donHangChiTietList.size() == 1) {
-                            donHang.setTrang_thai(TrangThai.HD.getTrangThai());
+                        if (donHangChiTietList.size() == 1 && donHangChiTietList.get(0).getProduct().getId().equals(product.getId())) {
+                            donHang.setTrang_thai(TrangThai.HUY_DON.getTrangThai());
                             donHang.setThong_tin_huy_don("Admin hủy đơn do sản phẩm "
-                                    + donHangChiTietList.get(0).getProduct().getName() + " không còn được bán");
+                                    + donHangChiTietList.get(0).getProduct().getName() + " không còn được bán("
+                                    + OverUtils.simpleDateFormat.format(new Date(System.currentTimeMillis())) + ")");
                             OrderDao.getInstance().updateDonHang(donHang, donHang.toMapHuyDon());
                         } else {
                             int viTri = -1;
@@ -232,9 +235,15 @@ public class DanhSachSanPhamByLoaiSPFragment extends Fragment implements OnClick
                                 }
                             }
                             if (viTri != -1) {
+                                DonHangChiTiet donHangChiTiet = donHang.getDon_hang_chi_tiets().get(viTri);
+                                Product product = donHangChiTiet.getProduct();
+                                donHang.setThoiGianGiaoHangDuKien(donHang.getThoiGianGiaoHangDuKien() -
+                                        (product.getThoiGianCheBien()));
+                                donHang.setTong_tien((int) (donHang.getTong_tien()
+                                        - ((product.getGia_ban() - (product.getGia_ban() * product.getKhuyen_mai())) * donHangChiTiet.getSo_luong())));
                                 donHang.setThong_tin_huy_don("Admin hủy sản phẩm "
                                         + donHangChiTietList.get(viTri).getProduct().getName()
-                                        + " do không còn được bán!");
+                                        + " do không còn được bán!(" + OverUtils.simpleDateFormat.format(new Date(System.currentTimeMillis())) + ")");
                                 donHangChiTietList.remove(viTri);
                                 donHang.setDon_hang_chi_tiets(donHangChiTietList);
                                 OrderDao.getInstance().updateDonHang(donHang, donHang.toMapHuySPTrongDon());
@@ -247,37 +256,20 @@ public class DanhSachSanPhamByLoaiSPFragment extends Fragment implements OnClick
 
             @Override
             public void onError(DatabaseError error) {
-
-            }
-        });
-    }
-
-    public void ngungKinhDoanhPr(Product product, IDone iDone) {
-        product.setTrang_thai(OverUtils.DUNG_KINH_DOANH);
-        ProductDao.getInstance().updateProduct(product, product.toMapTrangThaiSP(), new IAfterUpdateObject() {
-            @Override
-            public void onSuccess(Object obj) {
-                iDone.onDone(true);
-            }
-
-            @Override
-            public void onError(DatabaseError error) {
                 OverUtils.makeToast(getContext(), ERROR_MESSAGE);
-                iDone.onDone(false);
             }
         });
     }
 
-
-    int couterXoaGioHang = 0;
-
-    private void xoaGioHang(Product product, IDone iDone) {
+    private static boolean finishDeleteCart = false;
+    private static int counterDeleteCart = 0;
+    private void deleteCart(Product product, OnDelete onDelete) {
         UserDao.getInstance().getAllUser(new IAfterGetAllObject() {
             @Override
             public void iAfterGetAllObject(Object obj) {
                 List<User> userList = (List<User>) obj;
                 for (User user : userList) {
-                    couterXoaGioHang++;
+                    counterDeleteCart++;
                     UserDao.getInstance().getGioHangOfUser(user, new IAfterGetAllObject() {
                         @Override
                         public void iAfterGetAllObject(Object obj) {
@@ -294,9 +286,10 @@ public class DanhSachSanPhamByLoaiSPFragment extends Fragment implements OnClick
                                 user.setGio_hang(gioHangList);
                                 UserDao.getInstance().updateUser(user, user.toMapGioHang());
                             }
-                            if (couterXoaGioHang == userList.size()) {
-                                couterXoaGioHang = 0;
-                                iDone.onDone(true);
+                            if (counterDeleteCart == userList.size()) {
+                                counterDeleteCart = 0;
+                                finishDeleteCart = true;
+                                onDelete.onDelete();
                             }
 
                         }
@@ -304,7 +297,7 @@ public class DanhSachSanPhamByLoaiSPFragment extends Fragment implements OnClick
                         @Override
                         public void onError(DatabaseError error) {
                             OverUtils.makeToast(getContext(), ERROR_MESSAGE);
-                            iDone.onDone(false);
+                            finishDeleteCart = false;
                         }
                     });
                 }
@@ -313,21 +306,21 @@ public class DanhSachSanPhamByLoaiSPFragment extends Fragment implements OnClick
             @Override
             public void onError(DatabaseError error) {
                 OverUtils.makeToast(getContext(), ERROR_MESSAGE);
-                iDone.onDone(false);
+                finishDeleteCart = false;
             }
         });
     }
 
 
-    int couterSPDT = 0;
-
-    private void xoaSPDT(Product product, IDone iDone) {
+    private static boolean finishDeleteFavoriteProduct = false;
+    private static int counterFavoriteProduct = 0;
+    private void deleteFavoriteProduct(Product product, OnDelete onDelete) {
         UserDao.getInstance().getAllUser(new IAfterGetAllObject() {
             @Override
             public void iAfterGetAllObject(Object obj) {
                 List<User> userList = (List<User>) obj;
                 for (User user : userList) {
-                    couterSPDT++;
+                    counterFavoriteProduct++;
                     UserDao.getInstance().getSanPhamYeuThichOfUser(user, new IAfterGetAllObject() {
                         @Override
                         public void iAfterGetAllObject(Object obj) {
@@ -344,16 +337,17 @@ public class DanhSachSanPhamByLoaiSPFragment extends Fragment implements OnClick
                                 user.setMa_sp_da_thich(sanPhamYeuThichList);
                                 UserDao.getInstance().updateUser(user, user.toMapSPDaThich());
                             }
-                            if (couterSPDT == userList.size()) {
-                                couterSPDT = 0;
-                                iDone.onDone(true);
+                            if (counterFavoriteProduct == userList.size()) {
+                                counterFavoriteProduct = 0;
+                                finishDeleteFavoriteProduct = true;
+                                onDelete.onDelete();
                             }
                         }
 
                         @Override
                         public void onError(DatabaseError error) {
                             OverUtils.makeToast(getContext(), ERROR_MESSAGE);
-                            iDone.onDone(false);
+                            finishDeleteFavoriteProduct = false;
                         }
                     });
                 }
@@ -362,8 +356,26 @@ public class DanhSachSanPhamByLoaiSPFragment extends Fragment implements OnClick
             @Override
             public void onError(DatabaseError error) {
                 OverUtils.makeToast(getContext(), ERROR_MESSAGE);
-                iDone.onDone(false);
+                finishDeleteFavoriteProduct = false;
             }
         });
+    }
+
+    @Override
+    public synchronized void onDelete() {
+        if(finishDeleteCart && finishDeleteFavoriteProduct) {
+            FirebaseDatabase.getInstance().getReference().child("san_pham").child(productNeedDelete.getId())
+                    .removeValue((error, ref) -> {
+                        if (error == null) {
+                            OverUtils.makeToast(mContext, "Xóa thành công");
+                            productNeedDelete = null;
+                            progressDialog.dismiss();
+                        } else {
+                            productNeedDelete = null;
+                            progressDialog.dismiss();
+                        }
+                    });
+        }
+
     }
 }

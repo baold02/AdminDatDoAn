@@ -58,7 +58,7 @@ public class DoanhThuAdapter extends RecyclerView.Adapter<DoanhThuAdapter.DoanhT
         String tongTien = "Doanh Thu: <font color='green'>" + OverUtils.currencyFormat.format(donHang.getTong_tien()) + "</font>";
         holder.tvDoanhThu.setText(Html.fromHtml(tongTien), TextView.BufferType.SPANNABLE);
         holder.item.setOnClickListener(v -> {
-            onClickItem.onClickItem(donHang);
+            onClickItem.onClickItem(donHang.getId());
         });
     }
 

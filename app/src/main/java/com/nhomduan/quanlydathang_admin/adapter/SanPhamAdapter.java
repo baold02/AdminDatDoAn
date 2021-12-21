@@ -56,7 +56,7 @@ public class SanPhamAdapter extends RecyclerView.Adapter<SanPhamAdapter.SanPhamV
         holder.tvTenSanPham.setText("Tên SP: " + product.getName());
         holder.tvSoLuotThich.setText("Số Lượng yêu thích : " + product.getRate());
 
-        holder.itemSanPham.setOnClickListener(view -> onClickItem.onClickItem(product));
+        holder.itemSanPham.setOnClickListener(view -> onClickItem.onClickItem(product.getId()));
         holder.tvDelete.setOnClickListener(view -> onClickItem.onDeleteItem(product));
         holder.tvEdit.setOnClickListener(view -> onClickItem.onUpdateItem(product));
 

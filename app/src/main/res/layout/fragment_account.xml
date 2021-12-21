@@ -14,7 +14,6 @@
         android:background="@drawable/gradients"
         app:popupTheme="@style/ThemeOverlay.AppCompat.Light"
         app:title="Tài khoản"
-        app:navigationIcon="@drawable/ic_back"
         app:titleTextColor="@color/white" />
 
     <androidx.cardview.widget.CardView

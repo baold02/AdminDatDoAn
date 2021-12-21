@@ -1,7 +1,9 @@
 package com.nhomduan.quanlydathang_admin.fragment;
 
-import android.content.Intent;
 import android.os.Bundle;
+import android.view.LayoutInflater;
+import android.view.View;
+import android.view.ViewGroup;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -10,13 +12,8 @@ import androidx.recyclerview.widget.DividerItemDecoration;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-
 import com.google.firebase.database.DatabaseError;
 import com.nhomduan.quanlydathang_admin.R;
-import com.nhomduan.quanlydathang_admin.activities.DonHangChiTietActivity;
 import com.nhomduan.quanlydathang_admin.adapter.DonHangAdapter;
 import com.nhomduan.quanlydathang_admin.dao.OrderDao;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterGetAllObject;
@@ -31,11 +28,9 @@ import java.util.List;
 
 public class DanhSachDonHangByTTFragment extends Fragment implements OnClickItem {
     private TrangThai trangThai;
-
     private RecyclerView rcvDanhSachDonHang;
     private List<DonHang> donHangList;
     private DonHangAdapter donHangAdapter;
-
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -52,6 +47,10 @@ public class DanhSachDonHangByTTFragment extends Fragment implements OnClickItem
         setUpListDonHang();
     }
 
+    private void initView(View view) {
+        rcvDanhSachDonHang = view.findViewById(R.id.rcvDonHang);
+    }
+
     private void getData() {
         Bundle bundle = getArguments();
         if(bundle != null) {
@@ -59,16 +58,13 @@ public class DanhSachDonHangByTTFragment extends Fragment implements OnClickItem
         }
     }
 
-    private void initView(View view) {
-        rcvDanhSachDonHang = view.findViewById(R.id.rcvDonHang);
-    }
+
 
     private void setUpListDonHang() {
         donHangList = new ArrayList<>();
         donHangAdapter = new DonHangAdapter(donHangList, this);
         rcvDanhSachDonHang.setLayoutManager(new LinearLayoutManager(getContext()));
-        rcvDanhSachDonHang.setHasFixedSize(true);
-        rcvDanhSachDonHang.addItemDecoration(new DividerItemDecoration(getContext(), DividerItemDecoration.VERTICAL));
+        rcvDanhSachDonHang.addItemDecoration(new DividerItemDecoration(requireContext(), DividerItemDecoration.VERTICAL));
         rcvDanhSachDonHang.setAdapter(donHangAdapter);
 
         OrderDao.getInstance().getDonHangByTrangThai(trangThai, new IAfterGetAllObject() {
@@ -88,9 +84,15 @@ public class DanhSachDonHangByTTFragment extends Fragment implements OnClickItem
 
     @Override
     public void onClickItem(Object obj) {
-        Intent intent = new Intent(getContext(), DonHangChiTietActivity.class);
-        intent.putExtra("don_hang", (DonHang) obj);
-        startActivity(intent);
+        Fragment fragment = new ChiTietDonHangFragment();
+        Bundle args = new Bundle();
+        args.putString("ma_don_hang", String.valueOf(obj));
+        fragment.setArguments(args);
+        requireActivity().getSupportFragmentManager()
+                .beginTransaction()
+                .replace(R.id.contentFrame, fragment)
+                .addToBackStack(null)
+                .commit();
     }
 
     @Override

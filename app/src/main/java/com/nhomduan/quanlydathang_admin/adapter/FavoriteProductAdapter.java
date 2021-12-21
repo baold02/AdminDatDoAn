@@ -2,6 +2,7 @@ package com.nhomduan.quanlydathang_admin.adapter;
 
 import android.content.Context;
 import android.content.Intent;
+import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -11,10 +12,12 @@ import android.widget.TextView;
 import android.widget.ToggleButton;
 
 import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.nhomduan.quanlydathang_admin.R;
-import com.nhomduan.quanlydathang_admin.activities.ShowProductActivity;
+import com.nhomduan.quanlydathang_admin.fragment.ShowProductFragment;
+import com.nhomduan.quanlydathang_admin.interface_.OnClickItem;
 import com.nhomduan.quanlydathang_admin.model.Product;
 import com.squareup.picasso.Picasso;
 
@@ -24,12 +27,14 @@ import java.util.Locale;
 
 public class FavoriteProductAdapter extends RecyclerView.Adapter<FavoriteProductAdapter.ViewHolder> {
 
-    Context context;
-    List<Product> list;
+    private Context context;
+    private List<Product> list;
+    private OnClickItem onClickItem;
 
-    public FavoriteProductAdapter(Context context, List<Product> list) {
+    public FavoriteProductAdapter(Context context, List<Product> list, OnClickItem onClickItem) {
         this.context = context;
         this.list = list;
+        this.onClickItem = onClickItem;
     }
 
     @Override
@@ -41,27 +46,24 @@ public class FavoriteProductAdapter extends RecyclerView.Adapter<FavoriteProduct
     @Override
     public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
         Product product = list.get(position);
-        Picasso.get()
-                .load(product.getImage())
-                .placeholder(R.drawable.ic_image)
-                .into(holder.imgProduct);
-        holder.tvNameProduct.setText(product.getName());
-        holder.tvTimeProduct.setText(product.getThoiGianCheBien() + " phút");
-        holder.tvSoNguoiThichSP.setText(String.valueOf(product.getRate()));
-        holder.tvSoNguoiMuaSP.setText(String.valueOf(product.getSo_luong_da_ban()));
+        if(product != null) {
+            Picasso.get()
+                    .load(product.getImage())
+                    .placeholder(R.drawable.ic_image)
+                    .into(holder.imgProduct);
+            holder.tvNameProduct.setText(product.getName());
+            holder.tvTimeProduct.setText(product.getThoiGianCheBien() + " phút");
+            holder.tvSoNguoiThichSP.setText(String.valueOf(product.getRate()));
+            holder.tvSoNguoiMuaSP.setText(String.valueOf(product.getSo_luong_da_ban()));
 
-        Locale locale = new Locale("vi", "VN");
-        NumberFormat currencyFormat = NumberFormat.getNumberInstance(locale);
-        holder.tvPriceProduct.setText(currencyFormat.format((int) (product.getGia_ban() - product.getGia_ban() * product.getKhuyen_mai())) + " VNĐ");
+            Locale locale = new Locale("vi", "VN");
+            NumberFormat currencyFormat = NumberFormat.getNumberInstance(locale);
+            holder.tvPriceProduct.setText(currencyFormat.format((int) (product.getGia_ban() - product.getGia_ban() * product.getKhuyen_mai())) + " VNĐ");
 
-        holder.viewHolderProduct.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                Intent intent = new Intent(context, ShowProductActivity.class);
-                intent.putExtra("productId", product.getId());
-                context.startActivity(intent);
-            }
-        });
+            holder.viewHolderProduct.setOnClickListener(v -> {
+                onClickItem.onClickItem(product.getId());
+            });
+        }
     }
 
     @Override

@@ -11,7 +11,7 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.appcompat.widget.Toolbar;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentActivity;
 import androidx.viewpager2.widget.ViewPager2;
 
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
@@ -26,7 +26,6 @@ import com.nhomduan.quanlydathang_admin.dao.ProductTypeDao;
 import com.nhomduan.quanlydathang_admin.interface_.IAfterGetAllObject;
 import com.nhomduan.quanlydathang_admin.model.LoaiSP;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public class DanhSachSanPhamFragment extends Fragment{
@@ -36,9 +35,7 @@ public class DanhSachSanPhamFragment extends Fragment{
     private TabLayout tabLayout;
     private ViewPager2 viewpager;
 
-
-    private FragmentManager mFragmentManager;
-    private MainActivity activity;
+    private FragmentActivity fragmentActivity;
 
     private List<LoaiSP> loaiSPList;
     private DanhSachSanPhamPagerAdapter danhSachSanPhamPagerAdapter;
@@ -54,28 +51,36 @@ public class DanhSachSanPhamFragment extends Fragment{
     public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
         initView(view);
-        mFragmentManager = getParentFragmentManager();
-        setHasOptionsMenu(true);
-        activity = (MainActivity) requireActivity();
-        activity.setSupportActionBar(toolbar);
-
+        setUpToolbar();
         setUpTabLayoutAndViewPager();
         setUpfBtnAddSanPham();
     }
 
-    private void setUpTabLayoutAndViewPager() {
-        loaiSPList = new ArrayList<>();
-        danhSachSanPhamPagerAdapter = new DanhSachSanPhamPagerAdapter(getChildFragmentManager(), this.getLifecycle(), loaiSPList);
-        viewpager.setAdapter(danhSachSanPhamPagerAdapter);
-        new TabLayoutMediator(tabLayout, viewpager,
-                (tab, position) -> tab.setText(loaiSPList.get(position).getName())).attach();
-        viewpager.setUserInputEnabled(false);
+    private void initView(View view) {
+        tabLayout = view.findViewById(R.id.tabLayout);
+        viewpager = view.findViewById(R.id.viewpager);
+        toolbar = view.findViewById(R.id.toolbar);
+        fBtnAddSanPham = view.findViewById(R.id.f_btnAddSanPham);
+        fragmentActivity = getActivity();
+    }
 
+    private void setUpToolbar() {
+        setHasOptionsMenu(true);
+        MainActivity activity = (MainActivity) requireActivity();
+        activity.setSupportActionBar(toolbar);
+    }
+
+    private void setUpTabLayoutAndViewPager() {
+        viewpager.setUserInputEnabled(false);
+        viewpager.setSaveEnabled(false);
         ProductTypeDao.getInstance().getAllProductTypeListener(new IAfterGetAllObject() {
             @Override
             public void iAfterGetAllObject(Object obj) {
                 loaiSPList = (List<LoaiSP>) obj;
-                danhSachSanPhamPagerAdapter.setData(loaiSPList);
+                danhSachSanPhamPagerAdapter = new DanhSachSanPhamPagerAdapter(fragmentActivity, loaiSPList);
+                viewpager.setAdapter(danhSachSanPhamPagerAdapter);
+                new TabLayoutMediator(tabLayout, viewpager,
+                        (tab, position) -> tab.setText(loaiSPList.get(position).getName())).attach();
             }
 
             @Override
@@ -86,24 +91,10 @@ public class DanhSachSanPhamFragment extends Fragment{
     }
 
     private void setUpfBtnAddSanPham() {
-        fBtnAddSanPham.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                activity.getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.contentFrame, new ThemSanPhamFragment())
-                        .addToBackStack(null)
-                        .commit();
-            }
-        });
+        fBtnAddSanPham.setOnClickListener(view -> requireActivity().getSupportFragmentManager().beginTransaction()
+                .replace(R.id.contentFrame, new ThemSanPhamFragment())
+                .addToBackStack(null)
+                .commit());
     }
-
-
-    private void initView(View view) {
-        tabLayout = view.findViewById(R.id.tabLayout);
-        viewpager = view.findViewById(R.id.viewpager);
-        toolbar = view.findViewById(R.id.toolbar);
-        fBtnAddSanPham = view.findViewById(R.id.f_btnAddSanPham);
-    }
-
 
 }

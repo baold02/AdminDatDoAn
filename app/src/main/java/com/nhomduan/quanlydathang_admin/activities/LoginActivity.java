@@ -73,18 +73,13 @@ public class LoginActivity extends AppCompatActivity {
                     Toast.makeText(getApplicationContext(), "Vui lòng nhập đầy đủ thông tin", Toast.LENGTH_LONG).show();
                     return;
                 }
-                verifyAccount(tenDangNhap, matKhau, new IDone() {
-                    @Override
-                    public void onDone(boolean done) {
-                        if(done) {
-                            remember(tenDangNhap, matKhau, remember);
-                            loginedUserName = tenDangNhap;
-                            Intent intent = new Intent(LoginActivity.this, MainActivity.class);
-                            startActivity(intent);
-                            finish();
-                        } else {
-                            Toast.makeText(getApplicationContext(), "Tên đăng nhập hoặc mật khẩu không chính xác !", Toast.LENGTH_LONG).show();
-                        }
+                verifyAccount(tenDangNhap, matKhau, done -> {
+                    if(done) {
+                        remember(tenDangNhap, matKhau, remember);
+                        loginedUserName = tenDangNhap;
+                        Intent intent = new Intent(LoginActivity.this, MainActivity.class);
+                        startActivity(intent);
+                        finish();
                     }
                 });
 
@@ -99,18 +94,23 @@ public class LoginActivity extends AppCompatActivity {
         AdminDao.getInstance().getAdminByUserName(tenDangNhap, new IAfterGetAllObject() {
             @Override
             public void iAfterGetAllObject(Object obj) {
-                Admin admin = (Admin) obj;
-                if(admin.getUserName() == null) {
-                    OverUtils.makeToast(LoginActivity.this, "Tài khoản không tồn tại");
-                    iDone.onDone(false);
-                } else {
-                    if(!matKhau.equals(admin.getPassword())) {
-                        OverUtils.makeToast(LoginActivity.this, "Mật khẩu không đúng");
+                if(obj != null) {
+                    Admin admin = (Admin) obj;
+                    if(admin.getUserName() == null) {
+                        OverUtils.makeToast(LoginActivity.this, "Tài khoản không tồn tại");
                         iDone.onDone(false);
                     } else {
-                        iDone.onDone(true);
+                        if(!matKhau.equals(admin.getPassword())) {
+                            OverUtils.makeToast(LoginActivity.this, "Mật khẩu không đúng");
+                            iDone.onDone(false);
+                        } else {
+                            iDone.onDone(true);
+                        }
                     }
+                } else {
+                    OverUtils.makeToast(LoginActivity.this, "Tài khoản không tồn tại");
                 }
+
             }
 
             @Override

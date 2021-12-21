@@ -2,6 +2,7 @@ package com.nhomduan.quanlydathang_admin.dao;
 
 import android.app.AlertDialog;
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -77,8 +78,15 @@ public class AdminDao {
                     DataSnapshot snapshot = task.getResult();
                     if(snapshot != null) {
                         Admin admin = snapshot.getValue(Admin.class);
-                        iAfterGetAllObject.iAfterGetAllObject(admin);
+                        if(admin != null) {
+                            iAfterGetAllObject.iAfterGetAllObject(admin);
+                        } else {
+                            iAfterGetAllObject.iAfterGetAllObject(null);
+                        }
+
                     }
+                } else {
+                    Log.w("TAG", task.getException());
                 }
             }
         });
